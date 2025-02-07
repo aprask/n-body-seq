@@ -7,9 +7,16 @@ using namespace std;
 #define ARGS 5 // num of particles, time step size, num of iterations, how often to dump state
 
 double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB);
+double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
+struct position {
+    double x;
+    double y;
+    double z;
+};
+
 struct particleNode {
     double mass;
-    double position;
+    struct position position;
     double velocity;
     double force;
     struct particleNode* nextParticleInSeq;
@@ -21,9 +28,21 @@ int main (int argc, char* argv[]) {
     return 0;
 }
 
+double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
+    return sqrt(pow((x2-x1), 2) + pow((y2-y1), 2) + pow((z2-z1), 2));
+}
+
 double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
     double totalMass = nodeA->mass * nodeB->mass; // distance between particles in space
-    double distanceBetweenParticles = nodeB->position - nodeA->position; // r
-    distanceBetweenParticles = pow(distanceBetweenParticles, 2); // r squared
-    return G(totalMass/distanceBetweenParticles);
+    double distance = calculateDistance(
+        nodeA->position.x,
+        nodeA->position.y,
+        nodeA->position.z,
+        nodeB->position.x,
+        nodeB->position.y,
+        nodeB->position.z
+    );
+    double distancedSquared = pow(distance, 2);
+    double directionOfForce = distance/abs(distance);
+    return (directionOfForce)*G(totalMass/distancedSquared);
 }
