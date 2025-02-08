@@ -44,7 +44,7 @@ int main (int argc, char* argv[]) {
         return -1;
     }
     for (int i = 0; i < size; ++i) {
-        
+
     }
     return 0;
 }
@@ -91,7 +91,7 @@ double calculateAverageVelocity(struct particleNode* p) {
 }
 
 double calculateInstVelocity(struct particleNode* p) {
-    return p->oldVelocity + (p->acceleration*(p->endTime-p->begTime));
+    return p->velocity + (p->acceleration*(p->endTime-p->begTime));
 }
 
 double calculateChangeInPosition(struct particleNode* p) {
