@@ -1,10 +1,11 @@
 #include <iostream>
 #include <cmath>
-#include <ctime>
 #include <string>
 #include <random>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 #define ARGS 5 // num of particles, time step size, num of iterations, how often to dump state
 const double G = 6.674*pow(10,-11); // G for grav force
@@ -13,9 +14,9 @@ const double SOFTENING_FACTOR = 0.000000001; // this is just an arbitary float (
 double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB);
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
 double calculateDistanceMagnitude(double distance);
-double calculateAverageVelocity(struct particleNode* p);
-double calculateInstVelocity(struct particleNode* p);
-double calculateChangeInPosition(struct particleNode* p);
+double calculateAverageVelocity(struct particleNode* p, double delta_t);
+double calculateInstVelocity(struct particleNode* p, double delta_t);
+double calculateChangeInPosition(struct particleNode* p, double delta_t);
 double calculateAcceleration(struct particleNode* p, double force);
 struct position {
     double x;
@@ -50,9 +51,11 @@ int main (int argc, char* argv[]) {
     }
     for (int i = 0; i < size; ++i) {
         for (int j = 0; i < size; ++j) (particleField+j)->force = 0; // resetting the force
+        auto t_initial = steady_clock::now();
         for (int j = 0; j < size; ++j) {
             if (i == j) continue;
-
+            auto delta_t = duration_cast<seconds>(steady_clock::now() - t_initial).count();
+            // double changeInPos = calculateChangeInPosition()
         }
     }
     return 0;
@@ -82,8 +85,7 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
     return directionOfForce*gravitationalForce;
 }
 
-double calculateAverageVelocity(struct particleNode* p, time_t endTime, time_t begTime) {
-    double seconds = difftime(endTime, begTime); // reference: https://en.cppreference.com/w/c/chrono/difftime
+double calculateAverageVelocity(struct particleNode* p, double delta_t) {
     double displacement = calculateDistance(
         p->oldPosition.x,
         p->oldPosition.y,
@@ -92,16 +94,15 @@ double calculateAverageVelocity(struct particleNode* p, time_t endTime, time_t b
         p->position.y,
         p->position.z
     );
-    return displacement/seconds;
+    return displacement/delta_t;
 }
 
-double calculateInstVelocity(struct particleNode* p, time_t endTime, time_t begTime) {
-    return p->velocity + (p->acceleration*(endTime-begTime));
+double calculateInstVelocity(struct particleNode* p, double delta_t) {
+    return p->velocity + (p->acceleration*(delta_t));
 }
 
-double calculateChangeInPosition(struct particleNode* p, time_t endTime, time_t begTime) {
-    double seconds = difftime(endTime, begTime);
-    double velocityTimesTime = p->velocity*seconds;
+double calculateChangeInPosition(struct particleNode* p, double delta_t) {
+    double velocityTimesTime = p->velocity*delta_t;
     double changeInOldPosition = calculateDistance(
         p->oldPosition.x,
         p->oldPosition.y,
