@@ -32,8 +32,6 @@ struct particleNode {
     double acceleration;
     time_t begTime;
     time_t endTime;
-    struct particleNode* nextParticleInSeq;
-    struct particleNode* previousParticleInSeq;
 };
 
 int main (int argc, char* argv[]) {
@@ -51,10 +49,7 @@ int main (int argc, char* argv[]) {
         (particleField+i)->position.y = rand() % 1000;
         (particleField+i)->position.z = rand() % 1000;
         (particleField+i)->mass = rand() % 1000;
-        (particleField+i)->previousParticleInSeq = (i == 0) ? NULL : (particleField+i-1);
-        (particleField+i)->nextParticleInSeq = (i == size-1) ? NULL : (particleField+i+1);
     }
-    cout << "Particle 1's neighbor's position in x " << particleField->nextParticleInSeq->position.x << endl;
     return 0;
 }
 
