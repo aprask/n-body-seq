@@ -30,8 +30,6 @@ struct particleNode {
     double velocity;
     double force;
     double acceleration;
-    time_t begTime;
-    time_t endTime;
 };
 
 int main (int argc, char* argv[]) {
@@ -51,8 +49,10 @@ int main (int argc, char* argv[]) {
         (particleField+i)->mass = rand() % 1000;
     }
     for (int i = 0; i < size; ++i) {
+        for (int j = 0; i < size; ++j) (particleField+j)->force = 0; // resetting the force
         for (int j = 0; j < size; ++j) {
-            cout << "Masses of each particle: " << (particleField+j)->mass << endl;
+            if (i == j) continue;
+
         }
     }
     return 0;
@@ -82,8 +82,8 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
     return directionOfForce*gravitationalForce;
 }
 
-double calculateAverageVelocity(struct particleNode* p) {
-    double seconds = difftime(p->endTime, p->begTime); // reference: https://en.cppreference.com/w/c/chrono/difftime
+double calculateAverageVelocity(struct particleNode* p, time_t endTime, time_t begTime) {
+    double seconds = difftime(endTime, begTime); // reference: https://en.cppreference.com/w/c/chrono/difftime
     double displacement = calculateDistance(
         p->oldPosition.x,
         p->oldPosition.y,
@@ -95,12 +95,12 @@ double calculateAverageVelocity(struct particleNode* p) {
     return displacement/seconds;
 }
 
-double calculateInstVelocity(struct particleNode* p) {
-    return p->velocity + (p->acceleration*(p->endTime-p->begTime));
+double calculateInstVelocity(struct particleNode* p, time_t endTime, time_t begTime) {
+    return p->velocity + (p->acceleration*(endTime-begTime));
 }
 
-double calculateChangeInPosition(struct particleNode* p) {
-    double seconds = difftime(p->endTime, p->begTime);
+double calculateChangeInPosition(struct particleNode* p, time_t endTime, time_t begTime) {
+    double seconds = difftime(endTime, begTime);
     double velocityTimesTime = p->velocity*seconds;
     double changeInOldPosition = calculateDistance(
         p->oldPosition.x,
