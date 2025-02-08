@@ -82,7 +82,7 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
 }
 
 double calculateAverageVelocity(struct particleNode* p) {
-    double seconds = difftime(p->begTime, p->endTime); // reference: https://en.cppreference.com/w/c/chrono/difftime
+    double seconds = difftime(p->endTime, p->begTime); // reference: https://en.cppreference.com/w/c/chrono/difftime
     double displacement = calculateDistance(
         p->oldPosition.x,
         p->oldPosition.y,
@@ -99,7 +99,7 @@ double calculateInstVelocity(struct particleNode* p) {
 }
 
 double calculateChangeInPosition(struct particleNode* p) {
-    double seconds = difftime(p->begTime, p->endTime);
+    double seconds = difftime(p->endTime, p->begTime);
     double velocityTimesTime = p->velocity*seconds;
     double changeInOldPosition = calculateDistance(
         p->oldPosition.x,
