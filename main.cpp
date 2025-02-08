@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <ctime>
+#include <string>
 
 using namespace std;
 
@@ -10,6 +11,7 @@ const double SOFTENING_FACTOR = 0.000000001; // this is just an arbitary float (
 
 double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB);
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
+double calculateDistanceMagnitude(double distance);
 double calculateAverageVelocity(struct particleNode* p);
 double calculateInstVelocity(struct particleNode* p);
 double calculateChangeInPosition(struct particleNode* p);
@@ -35,26 +37,20 @@ struct particleNode {
 };
 
 int main (int argc, char* argv[]) {
-    struct particleNode* p1 = (struct particleNode*)malloc(sizeof(struct particleNode));
-    struct particleNode* p2 = (struct particleNode*)malloc(sizeof(struct particleNode));
-    p1->mass = 5453535;
-    p1->position.x = 33;
-    p1->position.y = 33;
-    p1->position.z = 54;
-    
-    p2->mass = 454524;
-    p2->position.x = 34;
-    p2->position.y = 2;
-    p2->position.z = 3;
-
-    p1->oldVelocity = -5;
-    p1->acceleration = 10;
-    p1->begTime = 1;
-    p1->endTime = 20;
-
-    double instVelocity = calculateInstVelocity(p1);
-    cout << "Inst Velocity: " << instVelocity << endl;
+    size_t size = 3;
+    struct particleNode* particleField = (struct particleNode*)malloc(sizeof(struct particleNode) * size);
+    if (!particleField) {
+        cerr << "Cannot dynamically allocate mem for particle field" << endl;
+        return -1;
+    }
+    for (int i = 0; i < size; ++i) {
+        
+    }
     return 0;
+}
+
+void initParticles(size_t numOfParticles) {
+    
 }
 
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
