@@ -2,6 +2,7 @@
 #include <cmath>
 #include <ctime>
 #include <string>
+#include <random>
 
 using namespace std;
 
@@ -26,7 +27,6 @@ struct particleNode {
     double mass;
     struct position oldPosition;
     struct position position;
-    double oldVelocity;
     double velocity;
     double force;
     double acceleration;
@@ -37,20 +37,25 @@ struct particleNode {
 };
 
 int main (int argc, char* argv[]) {
-    size_t size = 3;
+    size_t size = 2;
     struct particleNode* particleField = (struct particleNode*)malloc(sizeof(struct particleNode) * size);
     if (!particleField) {
         cerr << "Cannot dynamically allocate mem for particle field" << endl;
         return -1;
     }
     for (int i = 0; i < size; ++i) {
-
+        (particleField+i)->velocity = rand() % 1000;
+        (particleField+i)->acceleration = rand() % 1000;
+        (particleField+i)->force = rand() % 1000;
+        (particleField+i)->position.x = rand() % 1000;
+        (particleField+i)->position.y = rand() % 1000;
+        (particleField+i)->position.z = rand() % 1000;
+        (particleField+i)->mass = rand() % 1000;
+        (particleField+i)->previousParticleInSeq = (i == 0) ? NULL : (particleField+i-1);
+        (particleField+i)->nextParticleInSeq = (i == size-1) ? NULL : (particleField+i+1);
     }
+    cout << "Particle 1's neighbor's position in x " << particleField->nextParticleInSeq->position.x << endl;
     return 0;
-}
-
-void initParticles(size_t numOfParticles) {
-    
 }
 
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
