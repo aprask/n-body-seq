@@ -57,7 +57,7 @@ int main (int argc, char* argv[]) {
             double changeInX = calculateChangeInPosition((particleField+i)->position.x, (particleField+i), delta_t); // new x
             double changeInY = calculateChangeInPosition((particleField+i)->position.y, (particleField+i), delta_t); // new y
             double changeInZ = calculateChangeInPosition((particleField+i)->position.z, (particleField+i), delta_t); // new z
-
+            
         }
     }
     return 0;
