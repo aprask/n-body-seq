@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <ctime>
 
 using namespace std;
 
@@ -9,6 +10,8 @@ const double SOFTENING_FACTOR = 0.000000001;
 
 double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB);
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
+double caclulateDisplacement(double x1, double y1, double z1, double x2, double y2, double z2);
+double calculateAverageVelocity(struct particleNode* p);
 struct position {
     double x;
     double y;
@@ -17,9 +20,12 @@ struct position {
 
 struct particleNode {
     double mass;
+    struct position started;
     struct position position;
     double velocity;
     double force;
+    time_t begTime;
+    struct tm elaspedTime;
     struct particleNode* nextParticleInSeq;
     struct particleNode* previousParticleInSeq;
 };
@@ -38,11 +44,31 @@ int main (int argc, char* argv[]) {
     p2->position.z = 3;
 
     printf("Force is %f\n", calculateForce(p1, p2));
+
+    p1->started.x = 1;
+    p1->started.y = 2;
+    p1->started.z = 9;
+
+    time_t testTime = time(0);
+
+    struct tm elapsedTime = *localtime(&testTime);
+
+    elapsedTime.tm_hour = 1;
+    elapsedTime.tm_sec = 49;
+
+    p1->begTime = testTime;
+    p1->elaspedTime = elapsedTime;
+
+    printf("Avg Velocity is %f\n", calculateAverageVelocity(p1));
     return 0;
 }
 
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
     return sqrt(pow((x2-x1), 2) + pow((y2-y1), 2) + pow((z2-z1), 2));
+}
+
+double caclulateDisplacement(double x1, double y1, double z1, double x2, double y2, double z2) {
+    return (x2-x1)+(y2-y1)+(z2-z1);
 }
 
 double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
@@ -63,4 +89,17 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
     cout << "Direction of Force: " << directionOfForce << endl;
     double gravitationalForce = G * (totalMass/((distancedSquared + SOFTENING_FACTOR)));
     return directionOfForce*gravitationalForce;
+}
+
+double calculateAverageVelocity(struct particleNode* p) {
+    double seconds = difftime(p->begTime, mktime(&p->elaspedTime)); // reference: https://en.cppreference.com/w/c/chrono/difftime
+    double displacement = caclulateDisplacement(
+        p->started.x,
+        p->started.y,
+        p->started.z,
+        p->position.x, 
+        p->position.y, 
+        p->position.z
+    );
+    return displacement/seconds;
 }
