@@ -16,7 +16,7 @@ double calculateDistance(double x1, double y1, double z1, double x2, double y2, 
 double calculateDistanceMagnitude(double distance);
 double calculateAverageVelocity(struct particleNode* p, double delta_t);
 double calculateInstVelocity(struct particleNode* p, double delta_t);
-double calculateChangeInPosition(struct particleNode* p, double delta_t);
+double calculateChangeInPosition(double coordinate, struct particleNode* p, double delta_t);
 double calculateAcceleration(struct particleNode* p, double force);
 struct position {
     double x;
@@ -26,7 +26,6 @@ struct position {
 
 struct particleNode {
     double mass;
-    struct position oldPosition;
     struct position position;
     double velocity;
     double force;
@@ -54,8 +53,11 @@ int main (int argc, char* argv[]) {
         auto t_initial = steady_clock::now();
         for (int j = 0; j < size; ++j) {
             if (i == j) continue;
-            auto delta_t = duration_cast<seconds>(steady_clock::now() - t_initial).count();
-            // double changeInPos = calculateChangeInPosition()
+            auto delta_t = duration_cast<seconds>(steady_clock::now() - t_initial).count(); // change in time (t2-t1)
+            double changeInX = calculateChangeInPosition((particleField+i)->position.x, (particleField+i), delta_t); // new x
+            double changeInY = calculateChangeInPosition((particleField+i)->position.y, (particleField+i), delta_t); // new y
+            double changeInZ = calculateChangeInPosition((particleField+i)->position.z, (particleField+i), delta_t); // new z
+
         }
     }
     return 0;
@@ -85,33 +87,13 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
     return directionOfForce*gravitationalForce;
 }
 
-double calculateAverageVelocity(struct particleNode* p, double delta_t) {
-    double displacement = calculateDistance(
-        p->oldPosition.x,
-        p->oldPosition.y,
-        p->oldPosition.z,
-        p->position.x, 
-        p->position.y,
-        p->position.z
-    );
-    return displacement/delta_t;
-}
-
 double calculateInstVelocity(struct particleNode* p, double delta_t) {
     return p->velocity + (p->acceleration*(delta_t));
 }
 
-double calculateChangeInPosition(struct particleNode* p, double delta_t) {
+double calculateChangeInPosition(double coordinate, struct particleNode* p, double delta_t) {
     double velocityTimesTime = p->velocity*delta_t;
-    double changeInOldPosition = calculateDistance(
-        p->oldPosition.x,
-        p->oldPosition.y,
-        p->oldPosition.z,
-        p->position.x,
-        p->position.y,
-        p->position.z
-    );
-    return (changeInOldPosition + velocityTimesTime);
+    return (coordinate + velocityTimesTime);
 }
 
 double calculateAcceleration(struct particleNode* p, double force) {
