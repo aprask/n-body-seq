@@ -10,7 +10,6 @@ const double SOFTENING_FACTOR = 0.000000001; // this is just an arbitary float (
 
 double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB);
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
-double caclulateDisplacement(double x1, double y1, double z1, double x2, double y2, double z2);
 double calculateAverageVelocity(struct particleNode* p);
 double calculateInstVelocity(struct particleNode* p);
 double calculateChangeInPosition(struct particleNode* p);
@@ -84,7 +83,7 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
 
 double calculateAverageVelocity(struct particleNode* p) {
     double seconds = difftime(p->begTime, p->endTime); // reference: https://en.cppreference.com/w/c/chrono/difftime
-    double displacement = caclulateDisplacement(
+    double displacement = calculateDistance(
         p->oldPosition.x,
         p->oldPosition.y,
         p->oldPosition.z,
@@ -102,7 +101,7 @@ double calculateInstVelocity(struct particleNode* p) {
 double calculateChangeInPosition(struct particleNode* p) {
     double seconds = difftime(p->begTime, p->endTime);
     double velocityTimesTime = p->velocity*seconds;
-    double changeInOldPosition = caclulateDisplacement(
+    double changeInOldPosition = calculateDistance(
         p->oldPosition.x,
         p->oldPosition.y,
         p->oldPosition.z,
