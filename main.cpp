@@ -14,6 +14,7 @@ double caclulateDisplacement(double x1, double y1, double z1, double x2, double 
 double calculateAverageVelocity(struct particleNode* p);
 double calculateInstVelocity(struct particleNode* p);
 double calculateChangeInPosition(struct particleNode* p);
+double calculateAcceleration(struct particleNode* p, double force);
 struct position {
     double x;
     double y;
@@ -59,10 +60,6 @@ int main (int argc, char* argv[]) {
 
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
     return sqrt(pow((x2-x1), 2) + pow((y2-y1), 2) + pow((z2-z1), 2));
-}
-
-double caclulateDisplacement(double x1, double y1, double z1, double x2, double y2, double z2) {
-    return (x2-x1)+(y2-y1)+(z2-z1);
 }
 
 double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
@@ -114,4 +111,8 @@ double calculateChangeInPosition(struct particleNode* p) {
         p->position.z
     );
     return (changeInOldPosition + velocityTimesTime);
+}
+
+double calculateAcceleration(struct particleNode* p, double force) {
+    return force/p->mass;
 }
