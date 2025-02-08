@@ -25,7 +25,7 @@ struct particleNode {
     double velocity;
     double force;
     time_t begTime;
-    struct tm elaspedTime;
+    time_t endTime;
     struct particleNode* nextParticleInSeq;
     struct particleNode* previousParticleInSeq;
 };
@@ -48,18 +48,6 @@ int main (int argc, char* argv[]) {
     p1->started.x = 1;
     p1->started.y = 2;
     p1->started.z = 9;
-
-    time_t testTime = time(0);
-
-    struct tm elapsedTime = *localtime(&testTime);
-
-    elapsedTime.tm_hour = 1;
-    elapsedTime.tm_sec = 49;
-
-    p1->begTime = testTime;
-    p1->elaspedTime = elapsedTime;
-
-    printf("Avg Velocity is %f\n", calculateAverageVelocity(p1));
     return 0;
 }
 
@@ -92,7 +80,7 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
 }
 
 double calculateAverageVelocity(struct particleNode* p) {
-    double seconds = difftime(p->begTime, mktime(&p->elaspedTime)); // reference: https://en.cppreference.com/w/c/chrono/difftime
+    double seconds = difftime(p->begTime, p->endTime); // reference: https://en.cppreference.com/w/c/chrono/difftime
     double displacement = caclulateDisplacement(
         p->started.x,
         p->started.y,
