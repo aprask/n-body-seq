@@ -5,6 +5,7 @@ using namespace std;
 
 #define ARGS 5 // num of particles, time step size, num of iterations, how often to dump state
 const double G = 6.674*pow(10,-11); // G for grav force
+const double SOFTENING_FACTOR = 0.000000001;
 
 double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB);
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
@@ -60,6 +61,6 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
     cout << "Distance Squared: " << distancedSquared << endl;
     double directionOfForce = abs(distance)/distance;
     cout << "Direction of Force: " << directionOfForce << endl;
-    double gravitationalForce = G * (totalMass/(distancedSquared));
+    double gravitationalForce = G * (totalMass/((distancedSquared + SOFTENING_FACTOR)));
     return directionOfForce*gravitationalForce;
 }
