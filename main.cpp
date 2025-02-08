@@ -15,7 +15,7 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB);
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
 double calculateDistanceMagnitude(double distance);
 double calculateAverageVelocity(struct particleNode* p, double delta_t);
-double calculateInstVelocity(struct particleNode* p, double delta_t);
+double calculateInstVelocity(struct particleNode* p, double delta_t, double acceleration);
 double calculateChangeInPosition(double coordinate, struct particleNode* p, double delta_t);
 double calculateAcceleration(struct particleNode* p, double force);
 struct position {
@@ -29,7 +29,6 @@ struct particleNode {
     struct position position;
     double velocity;
     double force;
-    double acceleration;
 };
 
 int main (int argc, char* argv[]) {
@@ -41,7 +40,6 @@ int main (int argc, char* argv[]) {
     }
     for (int i = 0; i < size; ++i) {
         (particleField+i)->velocity = rand() % 1000;
-        (particleField+i)->acceleration = rand() % 1000;
         (particleField+i)->force = rand() % 1000;
         (particleField+i)->position.x = rand() % 1000;
         (particleField+i)->position.y = rand() % 1000;
@@ -49,7 +47,7 @@ int main (int argc, char* argv[]) {
         (particleField+i)->mass = rand() % 1000;
     }
     for (int i = 0; i < size; ++i) {
-        for (int j = 0; i < size; ++j) (particleField+j)->force = 0; // resetting the force
+        (particleField+i)->force = 0;
         auto t_initial = steady_clock::now();
         for (int j = 0; j < size; ++j) {
             if (i == j) continue;
@@ -57,8 +55,16 @@ int main (int argc, char* argv[]) {
             double changeInX = calculateChangeInPosition((particleField+i)->position.x, (particleField+i), delta_t); // new x
             double changeInY = calculateChangeInPosition((particleField+i)->position.y, (particleField+i), delta_t); // new y
             double changeInZ = calculateChangeInPosition((particleField+i)->position.z, (particleField+i), delta_t); // new z
-            
+            double forceBetweenTwoParticles = calculateForce((particleField+i), (particleField+j));
+            double acceleration = calculateAcceleration((particleField+i), forceBetweenTwoParticles);
+            double newVelocity = calculateInstVelocity((particleField+i), delta_t, acceleration);
+            (particleField+i)->force += forceBetweenTwoParticles; // accumulating force (total force acting on particle i)
+            (particleField+i)->velocity = newVelocity;
+            (particleField+i)->position.x = changeInX;
+            (particleField+i)->position.y = changeInY;
+            (particleField+i)->position.z = changeInZ;
         }
+        cout << "Total Force Acting on Particle " << i << " is: " << (particleField+i)->force << endl;
     }
     return 0;
 }
@@ -87,8 +93,8 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
     return directionOfForce*gravitationalForce;
 }
 
-double calculateInstVelocity(struct particleNode* p, double delta_t) {
-    return p->velocity + (p->acceleration*(delta_t));
+double calculateInstVelocity(struct particleNode* p, double delta_t, double acceleration) {
+    return p->velocity + (acceleration*(delta_t));
 }
 
 double calculateChangeInPosition(double coordinate, struct particleNode* p, double delta_t) {
