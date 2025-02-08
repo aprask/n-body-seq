@@ -50,6 +50,11 @@ int main (int argc, char* argv[]) {
         (particleField+i)->position.z = rand() % 1000;
         (particleField+i)->mass = rand() % 1000;
     }
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            cout << "Masses of each particle: " << (particleField+j)->mass << endl;
+        }
+    }
     return 0;
 }
 
