@@ -12,6 +12,7 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB);
 double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
 double caclulateDisplacement(double x1, double y1, double z1, double x2, double y2, double z2);
 double calculateAverageVelocity(struct particleNode* p);
+double calculateInstVelocity(struct particleNode* p);
 struct position {
     double x;
     double y;
@@ -20,10 +21,12 @@ struct position {
 
 struct particleNode {
     double mass;
-    struct position started;
+    struct position oldPosition;
     struct position position;
+    double oldVelocity;
     double velocity;
     double force;
+    double acceleration;
     time_t begTime;
     time_t endTime;
     struct particleNode* nextParticleInSeq;
@@ -43,11 +46,13 @@ int main (int argc, char* argv[]) {
     p2->position.y = 2;
     p2->position.z = 3;
 
-    printf("Force is %f\n", calculateForce(p1, p2));
+    p1->oldVelocity = -5;
+    p1->acceleration = 10;
+    p1->begTime = 1;
+    p1->endTime = 20;
 
-    p1->started.x = 1;
-    p1->started.y = 2;
-    p1->started.z = 9;
+    double instVelocity = calculateInstVelocity(p1);
+    cout << "Inst Velocity: " << instVelocity << endl;
     return 0;
 }
 
@@ -82,12 +87,16 @@ double calculateForce(struct particleNode* nodeA, struct particleNode* nodeB) {
 double calculateAverageVelocity(struct particleNode* p) {
     double seconds = difftime(p->begTime, p->endTime); // reference: https://en.cppreference.com/w/c/chrono/difftime
     double displacement = caclulateDisplacement(
-        p->started.x,
-        p->started.y,
-        p->started.z,
+        p->oldPosition.x,
+        p->oldPosition.y,
+        p->oldPosition.z,
         p->position.x, 
-        p->position.y, 
+        p->position.y,
         p->position.z
     );
     return displacement/seconds;
+}
+
+double calculateInstVelocity(struct particleNode* p) {
+    return p->oldVelocity + (p->acceleration*(p->endTime-p->begTime));
 }
