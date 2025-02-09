@@ -4,6 +4,8 @@
         "cmath": "cpp",
         "cstdlib": "cpp",
         "sstream": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "xutility": "cpp",
+        "string": "cpp"
     }
 }
