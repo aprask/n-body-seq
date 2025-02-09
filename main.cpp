@@ -2,13 +2,11 @@
 #include <cmath>
 #include <string>
 #include <random>
-#include <chrono>
 #include <fstream>
 #include <ctype.h>
 #include <cstring>
 
 using namespace std;
-using namespace std::chrono;
 
 #define ARGS 5 // num of particles, time step size, num of iterations, how often to dump state
 const double G = 6.674*pow(10,-11); // G for grav force
@@ -55,23 +53,29 @@ struct particleNode {
 };
 
 int main (int argc, char* argv[]) {
-    if (argc != ARGS) {
-        cerr << "Invalid number of arguments <" << argc << ">" << ". Expected " << ARGS << endl;
-        return 1;
-    } else {
-        for (int i = 0; i < ARGS-1; i++) {
-            for (int j = 0; j < strlen(argv[i]); j++) {
-                if (!isdigit(argv[i][j])) {
-                    cerr << "Invalid numerical argument type passed: " << argv[i] << endl;
-                    return 1;
-                }
-            }
-        }
-    }
-    const size_t N = stol(argv[1]); // num of particles
-    const size_t DELTA_T = stod(argv[2]); // delta t
-    const size_t TIME_STEPS = stol(argv[3]); // iterations
-    const size_t DUMP_RATE = stol(argv[4]); // how often we should dump the stats
+    // if (argc != ARGS) {
+    //     cerr << "Invalid number of arguments <" << argc << ">" << ". Expected " << ARGS << endl;
+    //     return 1;
+    // } else {
+    //     for (int i = 0; i < ARGS-1; i++) {
+    //         for (int j = 0; j < strlen(argv[i]); j++) {
+    //             if (!isdigit(argv[i][j])) {
+    //                 cerr << "Invalid numerical argument type passed: " << argv[i] << endl;
+    //                 return 1;
+    //             }
+    //         }
+    //     }
+    // }
+    // const size_t N = stol(argv[1]); // num of particles
+    // const size_t DELTA_T = stod(argv[2]); // delta t
+    // const size_t TIME_STEPS = stol(argv[3]); // iterations
+    // const size_t DUMP_RATE = stol(argv[4]); // how often we should dump the stats
+
+    const size_t N = 2; // Number of particles
+    const double DELTA_T = 15; // Time step size
+    const size_t TIME_STEPS = 1; // Number of iterations
+    const size_t DUMP_RATE = 1; // How often to dump the state
+
 
     struct particleNode* particleField = (struct particleNode*)malloc(sizeof(struct particleNode) * N);
     if (!particleField) {
@@ -83,113 +87,114 @@ int main (int argc, char* argv[]) {
     dataFile.open("data/results.tsv", ios::app);
     dataFile << N << "\t"; // num of particles for tsv
 
-    for (int i = 0; i < N; ++i) {
-        (particleField+i)->velocity.vx = rand() % 100000;
-        (particleField+i)->velocity.vx = rand() % 100000;
-        (particleField+i)->velocity.vx = rand() % 100000;
-        (particleField+i)->force.fx = rand() % 100000;
-        (particleField+i)->force.fy = rand() % 100000;
-        (particleField+i)->force.fz = rand() % 100000;
-        (particleField+i)->position.x = rand() % 100000;
-        (particleField+i)->position.y = rand() % 100000;
-        (particleField+i)->position.z = rand() % 100000;
-        (particleField+i)->mass = rand() % 10000000000;
-    }
+    // for (int i = 0; i < N; ++i) {
+    //     (particleField+i)->velocity.vx = rand() % 100000;
+    //     (particleField+i)->velocity.vx = rand() % 100000;
+    //     (particleField+i)->velocity.vx = rand() % 100000;
+    //     (particleField+i)->force.fx = rand() % 100000;
+    //     (particleField+i)->force.fy = rand() % 100000;
+    //     (particleField+i)->force.fz = rand() % 100000;
+    //     (particleField+i)->position.x = rand() % 100000;
+    //     (particleField+i)->position.y = rand() % 100000;
+    //     (particleField+i)->position.z = rand() % 100000;
+    //     (particleField+i)->mass = rand() % 10000000000;
+    // }
 
-    // (particleField+0)->velocity.vx = 3;
-    // (particleField+0)->velocity.vy = 4;
-    // (particleField+0)->velocity.vz = 5;
-    // (particleField+0)->force.fx = 6;
-    // (particleField+0)->force.fy = 7;
-    // (particleField+0)->force.fz = 8;
-    // (particleField+0)->position.x = 1;
-    // (particleField+0)->position.y = 2;
-    // (particleField+0)->position.z = 3;
-    // (particleField+0)->mass = 5000;
+    (particleField+0)->velocity.vx = 3;
+    (particleField+0)->velocity.vy = 4;
+    (particleField+0)->velocity.vz = 5;
+    (particleField+0)->force.fx = 6;
+    (particleField+0)->force.fy = 7;
+    (particleField+0)->force.fz = 8;
+    (particleField+0)->position.x = 1;
+    (particleField+0)->position.y = 2;
+    (particleField+0)->position.z = 3;
+    (particleField+0)->mass = 5000;
 
-    // (particleField+1)->velocity.vx = -2;
-    // (particleField+1)->velocity.vy = 3;
-    // (particleField+1)->velocity.vz = -4;
-    // (particleField+1)->force.fx = -5;
-    // (particleField+1)->force.fy = 6;
-    // (particleField+1)->force.fz = -7;
-    // (particleField+1)->position.x = 4;
-    // (particleField+1)->position.y = 5;
-    // (particleField+1)->position.z = 6;
-    // (particleField+1)->mass = 6000;
+    (particleField+1)->velocity.vx = -2;
+    (particleField+1)->velocity.vy = 3;
+    (particleField+1)->velocity.vz = -4;
+    (particleField+1)->force.fx = -5;
+    (particleField+1)->force.fy = 6;
+    (particleField+1)->force.fz = -7;
+    (particleField+1)->position.x = 4;
+    (particleField+1)->position.y = 5;
+    (particleField+1)->position.z = 6;
+    (particleField+1)->mass = 6000;
+
     
-    // auto t_initial = steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        cout << "Particle " << i << endl;
-        dataFile << (particleField)->mass << "\t";
+    for (int i = 0; i < TIME_STEPS; ++i) {
         for (int j = 0; j < N; ++j) {
-            if (i == j) {
-                cout << "Skipping particle " << j << endl;
-                continue;
+            cout << "Particle " << j << endl;
+            dataFile << (particleField)->mass << "\t";
+            for (int k = 0; k < N; ++k) {
+                if (k == j) {
+                    cout << "Skipping particle " << k << endl;
+                    continue;
+                }
+    
+                double totalForce = calculateForce((particleField+j), (particleField+k));
+                cout << "Time Step " << j << " total force on particle " << j << " from particle " << j <<  " is: " << totalForce << endl;
+    
+    
+                double distance = calculateEuclideanDistance(
+                    (particleField+j)->position.x,
+                    (particleField+j)->position.y,
+                    (particleField+j)->position.z,
+                    (particleField+k)->position.x,
+                    (particleField+k)->position.y,
+                    (particleField+k)->position.z
+                );
+                cout << "Time Step " << j << " distance in euclidean space: " << distance << endl;
+    
+                (particleField+j)->force.fx = calculateForceComponent(
+                    totalForce,
+                    (particleField+j)->position.x,
+                    (particleField+j)->position.x,
+                    distance
+                );
+                (particleField+j)->force.fy = calculateForceComponent(
+                    totalForce, 
+                    (particleField+j)->position.y,
+                    (particleField+j)->position.y,
+                    distance
+                );
+                (particleField+j)->force.fz = calculateForceComponent(
+                    totalForce, 
+                    (particleField+j)->position.z,
+                    (particleField+j)->position.z,
+                    distance
+                );
+                cout << "Time Step " << j << " force component: (" << (particleField+j)->force.fx << "," << (particleField+j)->force.fy << "," << (particleField+j)->force.fz << ")" << endl;
+    
+                (particleField+j)->acceleration.ax = calculateAcceleration((particleField+j)->force.fx, (particleField+j)->mass);
+                (particleField+j)->acceleration.ay = calculateAcceleration((particleField+j)->force.fy, (particleField+j)->mass);
+                (particleField+j)->acceleration.az = calculateAcceleration((particleField+j)->force.fz, (particleField+j)->mass);
+                cout << "Time Step " << j << " acceleration: (" << (particleField+j)->acceleration.ax << "," << (particleField+j)->acceleration.ay << "," << (particleField+j)->acceleration.az << ")" << endl;
+    
+                (particleField+j)->velocity.vx = calculateVelocity((particleField+j)->velocity.vx, (particleField+j)->acceleration.ax, DELTA_T);
+                (particleField+j)->velocity.vy = calculateVelocity((particleField+j)->velocity.vy, (particleField+j)->acceleration.ay, DELTA_T);
+                (particleField+j)->velocity.vz = calculateVelocity((particleField+j)->velocity.vz, (particleField+j)->acceleration.az, DELTA_T);
+                cout << "Time Step " << j << " velocity: (" << (particleField+j)->velocity.vx << "," << (particleField+j)->velocity.vy << "," << (particleField+j)->velocity.vz << ")" << endl;
+    
+                (particleField+j)->position.x = calculatePosition((particleField+j)->position.x, (particleField+j)->velocity.vx, DELTA_T);
+                (particleField+j)->position.y = calculatePosition((particleField+j)->position.y, (particleField+j)->velocity.vy, DELTA_T);
+                (particleField+j)->position.z = calculatePosition((particleField+j)->position.z, (particleField+j)->velocity.vz, DELTA_T);
+                cout << "Time Step " << j << " position: (" << (particleField+j)->position.x << "," << (particleField+j)->position.y << "," << (particleField+j)->position.z << ")" << endl;
+                
+                if (!(k % DUMP_RATE)) {
+                    dataFile << (particleField+j)->position.x << "\t";
+                    dataFile << (particleField+j)->position.y << "\t";
+                    dataFile << (particleField+j)->position.z << "\t";
+                    dataFile << (particleField+j)->velocity.vx << "\t";
+                    dataFile << (particleField+j)->velocity.vx << "\t";
+                    dataFile << (particleField+j)->velocity.vy << "\t";
+                    dataFile << (particleField+j)->force.fx << "\t";
+                    dataFile << (particleField+j)->force.fy << "\t";
+                    dataFile << (particleField+j)->force.fz << "\t";    
+                }
             }
-            // auto delta_t = duration_cast<seconds>(steady_clock::now() - t_initial).count();
-
-            double totalForce = calculateForce((particleField+i), (particleField+j));
-            cout << "Time Step " << i << " total force on particle " << i << " from particle " << j <<  " is: " << totalForce << endl;
-
-
-            double distance = calculateEuclideanDistance(
-                (particleField+i)->position.x,
-                (particleField+i)->position.y,
-                (particleField+i)->position.z,
-                (particleField+j)->position.x,
-                (particleField+j)->position.y,
-                (particleField+j)->position.z
-            );
-            cout << "Time Step " << i << " distance in euclidean space: " << distance << endl;
-
-            (particleField+i)->force.fx = calculateForceComponent(
-                totalForce,
-                (particleField+i)->position.x,
-                (particleField+j)->position.x,
-                distance
-            );
-            (particleField+i)->force.fy = calculateForceComponent(
-                totalForce, 
-                (particleField+i)->position.y,
-                (particleField+j)->position.y,
-                distance
-            );
-            (particleField+i)->force.fz = calculateForceComponent(
-                totalForce, 
-                (particleField+i)->position.z,
-                (particleField+j)->position.z,
-                distance
-            );
-            cout << "Time Step " << i << " force component: (" << (particleField+i)->force.fx << "," << (particleField+i)->force.fy << "," << (particleField+i)->force.fz << ")" << endl;
-
-            (particleField+i)->acceleration.ax = calculateAcceleration((particleField+i)->force.fx, (particleField+i)->mass);
-            (particleField+i)->acceleration.ay = calculateAcceleration((particleField+i)->force.fy, (particleField+i)->mass);
-            (particleField+i)->acceleration.az = calculateAcceleration((particleField+i)->force.fz, (particleField+i)->mass);
-            cout << "Time Step " << i << " acceleration: (" << (particleField+i)->acceleration.ax << "," << (particleField+i)->acceleration.ay << "," << (particleField+i)->acceleration.az << ")" << endl;
-
-            (particleField+i)->velocity.vx = calculateVelocity((particleField+i)->velocity.vx, (particleField+i)->acceleration.ax, DELTA_T);
-            (particleField+i)->velocity.vy = calculateVelocity((particleField+i)->velocity.vy, (particleField+i)->acceleration.ay, DELTA_T);
-            (particleField+i)->velocity.vz = calculateVelocity((particleField+i)->velocity.vz, (particleField+i)->acceleration.az, DELTA_T);
-            cout << "Time Step " << i << " velocity: (" << (particleField+i)->velocity.vx << "," << (particleField+i)->velocity.vy << "," << (particleField+i)->velocity.vz << ")" << endl;
-
-            (particleField+i)->position.x = calculatePosition((particleField+i)->position.x, (particleField+i)->velocity.vx, DELTA_T);
-            (particleField+i)->position.y = calculatePosition((particleField+i)->position.y, (particleField+i)->velocity.vy, DELTA_T);
-            (particleField+i)->position.z = calculatePosition((particleField+i)->position.z, (particleField+i)->velocity.vz, DELTA_T);
-            cout << "Time Step " << i << " position: (" << (particleField+i)->position.x << "," << (particleField+i)->position.y << "," << (particleField+i)->position.z << ")" << endl;
-            
-            if (!(j % DUMP_RATE)) {
-                dataFile << (particleField)->position.x << "\t";
-                dataFile << (particleField)->position.y << "\t";
-                dataFile << (particleField)->position.z << "\t";
-                dataFile << (particleField)->velocity.vx << "\t";
-                dataFile << (particleField)->velocity.vx << "\t";
-                dataFile << (particleField)->velocity.vy << "\t";
-                dataFile << (particleField)->force.fx << "\t";
-                dataFile << (particleField)->force.fy << "\t";
-                dataFile << (particleField)->force.fz << "\t";    
-            }
-        }
+        }    
     }
     dataFile << "\n";
     dataFile.close();
