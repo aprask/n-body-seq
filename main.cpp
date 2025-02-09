@@ -11,11 +11,13 @@ using namespace std::chrono;
 const double G = 6.674*pow(10,-11); // G for grav force
 const double SOFTENING_FACTOR = 0.000000001; // this is just an arbitary float (I wasn't sure what "softening factor" actuall was...)
 
-double calculateForce(double mass1, double coordinate1, double mass2, double coordinate2);
+double calculateForceComponent(double mass1, double coordinate1, double mass2, double coordinate2);
 double calculateAcceleration(double force, double mass);
 double calculatePosition(double coordinate, double velocity, double delta_t);
 double calculateVelocity(double velocity, double acceleration, double delta_t);
-double calculateDistance(double coordinate1, double coordinate2);
+double calculateLinearDistance(double coordinate1, double coordinate2);
+double calculateEuclideanDistance(double x1, double y1, double z1, double x2, double y2, double z2);
+double calculateForce(struct particleNode* p1, struct particleNode* p2);
 
 struct acceleration {
     double ax;
@@ -73,9 +75,36 @@ int main (int argc, char* argv[]) {
             if (i == j) continue;
             auto delta_t = duration_cast<seconds>(steady_clock::now() - t_initial).count();
 
-            (particleField+i)->force.fx = calculateForce((particleField+i)->mass, (particleField+i)->force.fx, (particleField+i)->mass, (particleField+j)->force.fx);
-            (particleField+i)->force.fy = calculateForce((particleField+i)->mass, (particleField+i)->force.fy, (particleField+i)->mass, (particleField+j)->force.fy);
-            (particleField+i)->force.fz = calculateForce((particleField+i)->mass, (particleField+i)->force.fz, (particleField+i)->mass, (particleField+j)->force.fz);
+            double totalForce = calculateForce((particleField+i), (particleField+j));
+
+            double distance = calculateEuclideanDistance(
+                (particleField+i)->position.x,
+                (particleField+i)->position.y,
+                (particleField+i)->position.z,
+                (particleField+j)->position.x,
+                (particleField+j)->position.y,
+                (particleField+j)->position.z
+            );
+
+            (particleField+i)->force.fx = calculateForceComponent(
+                totalForce, 
+                (particleField+i)->position.x,
+                (particleField+j)->position.x,
+                distance
+            );
+            (particleField+i)->force.fy = calculateForceComponent(
+                totalForce, 
+                (particleField+i)->position.y,
+                (particleField+j)->position.y,
+                distance
+            );
+            (particleField+i)->force.fz = calculateForceComponent(
+                totalForce, 
+                (particleField+i)->position.z,
+                (particleField+j)->position.z,
+                distance
+            );
+
 
             (particleField+i)->acceleration.ax = calculateAcceleration((particleField+i)->force.fx, (particleField+i)->mass);
             (particleField+i)->acceleration.ay = calculateAcceleration((particleField+i)->force.fy, (particleField+i)->mass);
@@ -93,16 +122,25 @@ int main (int argc, char* argv[]) {
     return 0;
 }
 
-double calculateDistance(double coordinate1, double coordinate2) {
+double calculateEuclideanDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
+    return sqrt(pow((x2-x1), 2) + pow((y2-y1), 2) + pow((z2-z1), 2));
+}
+
+double calculateLinearDistance(double coordinate1, double coordinate2) {
     return coordinate2-coordinate1;
 }
 
-double calculateForce(double mass1, double coordinate1, double mass2, double coordinate2) {
-    double totalMass = mass1*mass2;
-    double distanceDifference = calculateDistance(coordinate1, coordinate2);
-    double r = distanceDifference/abs(distanceDifference);
-    double rSquared = pow(r,2);
-    return r*G*(totalMass/(rSquared+SOFTENING_FACTOR));
+double calculateForce(struct particleNode* p1, struct particleNode* p2) {
+    double totalMass = p1->mass*p2->mass;
+    double distance = calculateEuclideanDistance(
+        p1->position.x,
+        p1->position.y,
+        p1->position.z,
+        p2->position.x,
+        p2->position.y,
+        p2->position.z
+    );
+    return (distance/abs(distance))*G*(totalMass/(pow(distance,2)));
 }
 
 double calculatePosition(double coordinate, double velocity, double delta_t) {
@@ -115,4 +153,8 @@ double calculateVelocity(double velocity, double acceleration, double delta_t) {
 
 double calculateAcceleration(double force, double mass) {
     return force/mass;
+}
+
+double calculateForceComponent(double force, double coordinate1, double coordinate2, double distance) {
+    return force*((coordinate2-coordinate1)/(distance));
 }
