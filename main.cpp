@@ -15,6 +15,7 @@ double calculateForce(double mass1, double coordinate1, double mass2, double coo
 double calculateAcceleration(double force, double mass);
 double calculatePosition(double coordinate, double velocity, double delta_t);
 double calculateVelocity(double velocity, double acceleration, double delta_t);
+double calculateDistance(double coordinate1, double coordinate2);
 
 struct acceleration {
     double ax;
@@ -101,7 +102,7 @@ double calculateForce(double mass1, double coordinate1, double mass2, double coo
     double distanceDifference = calculateDistance(coordinate1, coordinate2);
     double r = distanceDifference/abs(distanceDifference);
     double rSquared = pow(r,2);
-    return r*G*(totalMass/rSquared);
+    return r*G*(totalMass/(rSquared+SOFTENING_FACTOR));
 }
 
 double calculatePosition(double coordinate, double velocity, double delta_t) {
