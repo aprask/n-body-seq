@@ -5,6 +5,7 @@
 #include <chrono>
 #include <fstream>
 #include <ctype.h>
+#include <cstring>
 
 using namespace std;
 using namespace std::chrono;
@@ -81,27 +82,41 @@ int main (int argc, char* argv[]) {
     ofstream dataFile;
     dataFile.open("data/results.tsv", ios::app);
     dataFile << N << "\t"; // num of particles for tsv
-    (particleField+0)->velocity.vx = 3;
-    (particleField+0)->velocity.vy = 4;
-    (particleField+0)->velocity.vz = 5;
-    (particleField+0)->force.fx = 6;
-    (particleField+0)->force.fy = 7;
-    (particleField+0)->force.fz = 8;
-    (particleField+0)->position.x = 1;
-    (particleField+0)->position.y = 2;
-    (particleField+0)->position.z = 3;
-    (particleField+0)->mass = 5000;
 
-    (particleField+1)->velocity.vx = -2;
-    (particleField+1)->velocity.vy = 3;
-    (particleField+1)->velocity.vz = -4;
-    (particleField+1)->force.fx = -5;
-    (particleField+1)->force.fy = 6;
-    (particleField+1)->force.fz = -7;
-    (particleField+1)->position.x = 4;
-    (particleField+1)->position.y = 5;
-    (particleField+1)->position.z = 6;
-    (particleField+1)->mass = 6000;
+    for (int i = 0; i < N; ++i) {
+        (particleField+i)->velocity.vx = rand() % 100000;
+        (particleField+i)->velocity.vx = rand() % 100000;
+        (particleField+i)->velocity.vx = rand() % 100000;
+        (particleField+i)->force.fx = rand() % 100000;
+        (particleField+i)->force.fy = rand() % 100000;
+        (particleField+i)->force.fz = rand() % 100000;
+        (particleField+i)->position.x = rand() % 100000;
+        (particleField+i)->position.y = rand() % 100000;
+        (particleField+i)->position.z = rand() % 100000;
+        (particleField+i)->mass = rand() % 10000000000;
+    }
+
+    // (particleField+0)->velocity.vx = 3;
+    // (particleField+0)->velocity.vy = 4;
+    // (particleField+0)->velocity.vz = 5;
+    // (particleField+0)->force.fx = 6;
+    // (particleField+0)->force.fy = 7;
+    // (particleField+0)->force.fz = 8;
+    // (particleField+0)->position.x = 1;
+    // (particleField+0)->position.y = 2;
+    // (particleField+0)->position.z = 3;
+    // (particleField+0)->mass = 5000;
+
+    // (particleField+1)->velocity.vx = -2;
+    // (particleField+1)->velocity.vy = 3;
+    // (particleField+1)->velocity.vz = -4;
+    // (particleField+1)->force.fx = -5;
+    // (particleField+1)->force.fy = 6;
+    // (particleField+1)->force.fz = -7;
+    // (particleField+1)->position.x = 4;
+    // (particleField+1)->position.y = 5;
+    // (particleField+1)->position.z = 6;
+    // (particleField+1)->mass = 6000;
     
     // auto t_initial = steady_clock::now();
     for (int i = 0; i < N; ++i) {
