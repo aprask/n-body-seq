@@ -58,18 +58,39 @@ int main (int argc, char* argv[]) {
         cerr << "Cannot dynamically allocate mem for particle field" << endl;
         return -1;
     }
-    for (int i = 0; i < size; ++i) {
-        (particleField+i)->velocity.vx = rand() % 10;
-        (particleField+i)->velocity.vy = rand() % 10;
-        (particleField+i)->velocity.vz = rand() % 10;
-        (particleField+i)->force.fx = rand() % 10;
-        (particleField+i)->force.fy = rand() % 10;
-        (particleField+i)->force.fz = rand() % 10;
-        (particleField+i)->position.x = rand() % 10;
-        (particleField+i)->position.y = rand() % 10;
-        (particleField+i)->position.z = rand() % 10;
-        (particleField+i)->mass = rand() % 10000;
-    }
+    // for (int i = 0; i < size; ++i) {
+    //     (particleField+i)->velocity.vx = rand() % 10;
+    //     (particleField+i)->velocity.vy = rand() % 10;
+    //     (particleField+i)->velocity.vz = rand() % 10;
+    //     (particleField+i)->force.fx = rand() % 10;
+    //     (particleField+i)->force.fy = rand() % 10;
+    //     (particleField+i)->force.fz = rand() % 10;
+    //     (particleField+i)->position.x = rand() % 10;
+    //     (particleField+i)->position.y = rand() % 10;
+    //     (particleField+i)->position.z = rand() % 10;
+    //     (particleField+i)->mass = rand() % 10000;
+    // }
+    (particleField+0)->velocity.vx = 3;
+    (particleField+0)->velocity.vy = 4;
+    (particleField+0)->velocity.vz = 5;
+    (particleField+0)->force.fx = 6;
+    (particleField+0)->force.fy = 7;
+    (particleField+0)->force.fz = 8;
+    (particleField+0)->position.x = 1;
+    (particleField+0)->position.y = 2;
+    (particleField+0)->position.z = 3;
+    (particleField+0)->mass = 5000;
+
+    (particleField+1)->velocity.vx = -2;
+    (particleField+1)->velocity.vy = 3;
+    (particleField+1)->velocity.vz = -4;
+    (particleField+1)->force.fx = -5;
+    (particleField+1)->force.fy = 6;
+    (particleField+1)->force.fz = -7;
+    (particleField+1)->position.x = 4;
+    (particleField+1)->position.y = 5;
+    (particleField+1)->position.z = 6;
+    (particleField+1)->mass = 6000;
     auto t_initial = steady_clock::now();
     for (int i = 0; i < size; ++i) {
         cout << "Particle " << i << endl;
