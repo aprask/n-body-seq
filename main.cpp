@@ -11,12 +11,11 @@ using namespace std;
 using namespace std::filesystem;
 
 #define ARGS 6
-#define SOLAR_N 8
+#define SOLAR_N 3
 
 const double G = 6.674*pow(10,-11); // G for grav force
 const double SOFTENING_FACTOR = 0.0001; // this is just an arbitary float (I wasn't sure what "softening factor" actuall was...)
 
-void parseFile(const char* file);
 void particleFieldInit(int flag, struct particleNode* p, const int size);
 double calculateForceComponent(double mass1, double coordinate1, double mass2, double coordinate2);
 double calculateAcceleration(double force, double mass);
@@ -96,8 +95,6 @@ int main (int argc, char* argv[]) {
     for (int i = 0; i < TIME_STEPS; ++i) {
         for (int j = 0; j < N; ++j) {
             cout << "Particle " << j << endl;
-            dataFile << N << "\t";
-            dataFile << (particleField+j)->mass << "\t";
             for (int k = 0; k < N; ++k) {
                 if (k == j) {
                     cout << "Skipping particle " << k << endl;
@@ -154,6 +151,8 @@ int main (int argc, char* argv[]) {
                 cout << "Time Step " << j << " position: (" << (particleField+j)->position.x << "," << (particleField+j)->position.y << "," << (particleField+j)->position.z << ")" << endl;
                 
                 if (!(k % DUMP_RATE)) {
+                    dataFile << N << "\t";
+                    dataFile << (particleField+j)->mass << "\t";
                     dataFile << (particleField+j)->position.x << "\t";
                     dataFile << (particleField+j)->position.y << "\t";
                     dataFile << (particleField+j)->position.z << "\t";
@@ -162,18 +161,14 @@ int main (int argc, char* argv[]) {
                     dataFile << (particleField+j)->velocity.vy << "\t";
                     dataFile << (particleField+j)->force.fx << "\t";
                     dataFile << (particleField+j)->force.fy << "\t";
-                    dataFile << (particleField+j)->force.fz << "\t";    
+                    dataFile << (particleField+j)->force.fz << "\n";
+                    // dataFile << "\n";
                 }
             }
         }
-        dataFile << "\n";
     }
     dataFile.close();
     return 0;
-}
-
-void parseFile(const char* file) {
-    // TODO
 }
 
 void particleFieldInit(int flag, struct particleNode* p, const int size) {
@@ -193,97 +188,43 @@ void particleFieldInit(int flag, struct particleNode* p, const int size) {
                 (p+i)->mass = rand() % 10000000000;
             }
             break;
-        case 2:
-            (p+0)->velocity.vx = 47.4;
-            (p+0)->velocity.vy = 0.0;
+        case 2: // 3 body pre-defined model
+            (p+0)->velocity.vx = 225;
+            (p+0)->velocity.vy = 0.0; // sun (aka the origin)
             (p+0)->velocity.vz = 0.0;
             (p+0)->force.fx = 0;
             (p+0)->force.fy = 0;
             (p+0)->force.fz = 0;
-            (p+0)->position.x = 57.9*10e6;
+            (p+0)->position.x = 0;
             (p+0)->position.y = 0;
             (p+0)->position.z = 0;
-            (p+0)->mass = 0.330*1e24;
+            (p+0)->mass = 1.9891*10e30;
 
-            (p+1)->velocity.vx = 35.0;
+            (p+1)->velocity.vx = 29.8;
             (p+1)->velocity.vy = 0.0;
-            (p+1)->velocity.vz = 0.0;
+            (p+1)->velocity.vz = 0.0; // earth
             (p+1)->force.fx = 0;
             (p+1)->force.fy = 0;
             (p+1)->force.fz = 0;
-            (p+1)->position.x = 108.2*10e6;
+            (p+1)->position.x = 149.6*10e6;
             (p+1)->position.y = 0;
             (p+1)->position.z = 0;
-            (p+1)->mass = 4.87*1e24;
+            (p+1)->mass = 5.97219*1e24;
 
-            (p+2)->velocity.vx = 29.8;
+            (p+2)->velocity.vx = 0.0549; // moon
             (p+2)->velocity.vy = 0.0;
             (p+2)->velocity.vz = 0.0;
             (p+2)->force.fx = 0;
             (p+2)->force.fy = 0;
             (p+2)->force.fz = 0;
-            (p+2)->position.x = 149.6*10e6;
+            (p+2)->position.x = 0.384*10e6;
             (p+2)->position.y = 0;
             (p+2)->position.z = 0;
-            (p+2)->mass = 5.97*1e24;
-
-            (p+3)->velocity.vx = 24.1;
-            (p+3)->velocity.vy = 0.0;
-            (p+3)->velocity.vz = 0.0;
-            (p+3)->force.fx = 0;
-            (p+3)->force.fy = 0;
-            (p+3)->force.fz = 0;
-            (p+3)->position.x = 228*10e6;
-            (p+3)->position.y = 0;
-            (p+3)->position.z = 0;
-            (p+3)->mass = 0.642*1e24;
-
-            (p+4)->velocity.vx = 13.1;
-            (p+4)->velocity.vy = 0.0;
-            (p+4)->velocity.vz = 0.0;
-            (p+4)->force.fx = 0;
-            (p+4)->force.fy = 0;
-            (p+4)->force.fz = 0;
-            (p+4)->position.x = 778.5*10e6;
-            (p+4)->position.y = 0;
-            (p+4)->position.z = 0;
-            (p+4)->mass = 1.898*1e27;
-
-            (p+5)->velocity.vx = 9.7;
-            (p+5)->velocity.vy = 0.0;
-            (p+5)->velocity.vz = 0.0;
-            (p+5)->force.fx = 0;
-            (p+5)->force.fy = 0;
-            (p+5)->force.fz = 0;
-            (p+5)->position.x = 1432*10e6;
-            (p+5)->position.y = 0;
-            (p+5)->position.z = 0;
-            (p+5)->mass = 5.68*1e26;
-
-            (p+6)->velocity.vx = 6.8;
-            (p+6)->velocity.vy = 0.0;
-            (p+6)->velocity.vz = 0.0;
-            (p+6)->force.fx = 0;
-            (p+6)->force.fy = 0;
-            (p+6)->force.fz = 0;
-            (p+6)->position.x = 2867*10e6;
-            (p+6)->position.y = 0;
-            (p+6)->position.z = 0;
-            (p+6)->mass = 8.6*1e25;
-
-            (p+7)->velocity.vx = 5.4;
-            (p+7)->velocity.vy = 0.0;
-            (p+7)->velocity.vz = 0.0;
-            (p+7)->force.fx = 0;
-            (p+7)->force.fy = 0;
-            (p+7)->force.fz = 0;
-            (p+7)->position.x = 4515*10e6;
-            (p+7)->position.y = 0;
-            (p+7)->position.z = 0;
-            (p+7)->mass = 1.02*1e26;
+            (p+2)->mass = 7.34767309*10e22;
             break;
         case 3:
-            break; // TODO
+            // ifstream loadedFile("solar.tsv");
+            break;
         default:
             cout << "Invalid init type: " << flag << endl;
             exit(1);
