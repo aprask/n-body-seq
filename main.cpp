@@ -92,13 +92,12 @@ int main (int argc, char* argv[]) {
     particleFieldInit(FLAG, particleField, N);
 
     ofstream dataFile;
-    dataFile.open("results.tsv", ios::app);
-    dataFile << N << "\t"; // num of particles for tsv
-
+    dataFile.open("results.tsv", ios::trunc);
     for (int i = 0; i < TIME_STEPS; ++i) {
         for (int j = 0; j < N; ++j) {
             cout << "Particle " << j << endl;
-            dataFile << (particleField)->mass << "\t";
+            dataFile << N << "\t";
+            dataFile << (particleField+j)->mass << "\t";
             for (int k = 0; k < N; ++k) {
                 if (k == j) {
                     cout << "Skipping particle " << k << endl;
@@ -166,9 +165,9 @@ int main (int argc, char* argv[]) {
                     dataFile << (particleField+j)->force.fz << "\t";    
                 }
             }
-        }    
+        }
+        dataFile << "\n";
     }
-    dataFile << "\n";
     dataFile.close();
     return 0;
 }
@@ -183,7 +182,7 @@ void particleFieldInit(int flag, struct particleNode* p, const int size) {
         case 1:
             for (int i = 0; i < size; ++i) {
                 (p+i)->velocity.vx = rand() % 100000;
-                (p+i)->velocity.vx = rand() % 100000;
+                (p+i)->velocity.vy = rand() % 100000;
                 (p+i)->velocity.vx = rand() % 100000;
                 (p+i)->force.fx = rand() % 100000;
                 (p+i)->force.fy = rand() % 100000;
