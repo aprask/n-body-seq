@@ -161,8 +161,8 @@ int main (int argc, char* argv[]) {
                     dataFile << (particleField+j)->velocity.vy << "\t";
                     dataFile << (particleField+j)->force.fx << "\t";
                     dataFile << (particleField+j)->force.fy << "\t";
-                    dataFile << (particleField+j)->force.fz << "\n";
-                    // dataFile << "\n";
+                    dataFile << (particleField+j)->force.fz << "\t";
+                    dataFile << "\n";
                 }
             }
         }
