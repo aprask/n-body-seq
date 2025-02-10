@@ -5,13 +5,19 @@
 #include <fstream>
 #include <ctype.h>
 #include <cstring>
+#include <filesystem>
 
 using namespace std;
+using namespace std::filesystem;
 
-#define ARGS 5 // num of particles, time step size, num of iterations, how often to dump state
+#define ARGS 6
+#define SOLAR_N 8
+
 const double G = 6.674*pow(10,-11); // G for grav force
 const double SOFTENING_FACTOR = 0.0001; // this is just an arbitary float (I wasn't sure what "softening factor" actuall was...)
 
+void parseFile(const char* file);
+void particleFieldInit(int flag, struct particleNode* p, const int size);
 double calculateForceComponent(double mass1, double coordinate1, double mass2, double coordinate2);
 double calculateAcceleration(double force, double mass);
 double calculatePosition(double coordinate, double velocity, double delta_t);
@@ -52,77 +58,43 @@ struct particleNode {
     struct acceleration acceleration;
 };
 
+
 int main (int argc, char* argv[]) {
-    // if (argc != ARGS) {
-    //     cerr << "Invalid number of arguments <" << argc << ">" << ". Expected " << ARGS << endl;
-    //     return 1;
-    // } else {
-    //     for (int i = 0; i < ARGS-1; i++) {
-    //         for (int j = 0; j < strlen(argv[i]); j++) {
-    //             if (!isdigit(argv[i][j])) {
-    //                 cerr << "Invalid numerical argument type passed: " << argv[i] << endl;
-    //                 return 1;
-    //             }
-    //         }
-    //     }
-    // }
-    // const size_t N = stol(argv[1]); // num of particles
-    // const size_t DELTA_T = stod(argv[2]); // delta t
-    // const size_t TIME_STEPS = stol(argv[3]); // iterations
-    // const size_t DUMP_RATE = stol(argv[4]); // how often we should dump the stats
-
-    const size_t N = 2; // Number of particles
-    const double DELTA_T = 15; // Time step size
-    const size_t TIME_STEPS = 1; // Number of iterations
-    const size_t DUMP_RATE = 1; // How often to dump the state
-
-
+    if (argc != ARGS) {
+        cerr << "Invalid number of arguments <" << argc << ">" << ". Expected " << ARGS << endl;
+        return 1;
+    } else {
+        for (int i = 1; i < ARGS-1; i++) {
+            for (int j = 0; j < strlen(argv[i]); j++) {
+                if (!isdigit(argv[i][j])) {
+                    cerr << "Invalid numerical argument type passed: " << argv[i] << endl;
+                    return 1;
+                }
+            }
+        }
+    }
+    size_t FLAG = stoi(argv[1]);
+    size_t DELTA_T = stod(argv[3]); // delta t
+    size_t TIME_STEPS = stol(argv[4]); // iterations
+    size_t DUMP_RATE = stol(argv[5]); // how often we should dump the stats
+    size_t N;
+    if (FLAG == 2) {
+        N = SOLAR_N;
+    } else {
+        N = stol(argv[2]);
+    }
     struct particleNode* particleField = (struct particleNode*)malloc(sizeof(struct particleNode) * N);
     if (!particleField) {
         cerr << "Cannot dynamically allocate mem for particle field" << endl;
         return -1;
     }
 
+    particleFieldInit(FLAG, particleField, N);
+
     ofstream dataFile;
-    dataFile.open("data/results.tsv", ios::app);
+    dataFile.open("results.tsv", ios::app);
     dataFile << N << "\t"; // num of particles for tsv
 
-    // for (int i = 0; i < N; ++i) {
-    //     (particleField+i)->velocity.vx = rand() % 100000;
-    //     (particleField+i)->velocity.vx = rand() % 100000;
-    //     (particleField+i)->velocity.vx = rand() % 100000;
-    //     (particleField+i)->force.fx = rand() % 100000;
-    //     (particleField+i)->force.fy = rand() % 100000;
-    //     (particleField+i)->force.fz = rand() % 100000;
-    //     (particleField+i)->position.x = rand() % 100000;
-    //     (particleField+i)->position.y = rand() % 100000;
-    //     (particleField+i)->position.z = rand() % 100000;
-    //     (particleField+i)->mass = rand() % 10000000000;
-    // }
-
-    (particleField+0)->velocity.vx = 3;
-    (particleField+0)->velocity.vy = 4;
-    (particleField+0)->velocity.vz = 5;
-    (particleField+0)->force.fx = 6;
-    (particleField+0)->force.fy = 7;
-    (particleField+0)->force.fz = 8;
-    (particleField+0)->position.x = 1;
-    (particleField+0)->position.y = 2;
-    (particleField+0)->position.z = 3;
-    (particleField+0)->mass = 5000;
-
-    (particleField+1)->velocity.vx = -2;
-    (particleField+1)->velocity.vy = 3;
-    (particleField+1)->velocity.vz = -4;
-    (particleField+1)->force.fx = -5;
-    (particleField+1)->force.fy = 6;
-    (particleField+1)->force.fz = -7;
-    (particleField+1)->position.x = 4;
-    (particleField+1)->position.y = 5;
-    (particleField+1)->position.z = 6;
-    (particleField+1)->mass = 6000;
-
-    
     for (int i = 0; i < TIME_STEPS; ++i) {
         for (int j = 0; j < N; ++j) {
             cout << "Particle " << j << endl;
@@ -150,19 +122,19 @@ int main (int argc, char* argv[]) {
                 (particleField+j)->force.fx = calculateForceComponent(
                     totalForce,
                     (particleField+j)->position.x,
-                    (particleField+j)->position.x,
+                    (particleField+k)->position.x,
                     distance
                 );
                 (particleField+j)->force.fy = calculateForceComponent(
                     totalForce, 
                     (particleField+j)->position.y,
-                    (particleField+j)->position.y,
+                    (particleField+k)->position.y,
                     distance
                 );
                 (particleField+j)->force.fz = calculateForceComponent(
                     totalForce, 
                     (particleField+j)->position.z,
-                    (particleField+j)->position.z,
+                    (particleField+k)->position.z,
                     distance
                 );
                 cout << "Time Step " << j << " force component: (" << (particleField+j)->force.fx << "," << (particleField+j)->force.fy << "," << (particleField+j)->force.fz << ")" << endl;
@@ -199,6 +171,124 @@ int main (int argc, char* argv[]) {
     dataFile << "\n";
     dataFile.close();
     return 0;
+}
+
+void parseFile(const char* file) {
+    // TODO
+}
+
+void particleFieldInit(int flag, struct particleNode* p, const int size) {
+
+    switch (flag) {
+        case 1:
+            for (int i = 0; i < size; ++i) {
+                (p+i)->velocity.vx = rand() % 100000;
+                (p+i)->velocity.vx = rand() % 100000;
+                (p+i)->velocity.vx = rand() % 100000;
+                (p+i)->force.fx = rand() % 100000;
+                (p+i)->force.fy = rand() % 100000;
+                (p+i)->force.fz = rand() % 100000;
+                (p+i)->position.x = rand() % 100000;
+                (p+i)->position.y = rand() % 100000;
+                (p+i)->position.z = rand() % 100000;
+                (p+i)->mass = rand() % 10000000000;
+            }
+            break;
+        case 2:
+            (p+0)->velocity.vx = 47.4;
+            (p+0)->velocity.vy = 0.0;
+            (p+0)->velocity.vz = 0.0;
+            (p+0)->force.fx = 0;
+            (p+0)->force.fy = 0;
+            (p+0)->force.fz = 0;
+            (p+0)->position.x = 57.9*10e6;
+            (p+0)->position.y = 0;
+            (p+0)->position.z = 0;
+            (p+0)->mass = 0.330*1e24;
+
+            (p+1)->velocity.vx = 35.0;
+            (p+1)->velocity.vy = 0.0;
+            (p+1)->velocity.vz = 0.0;
+            (p+1)->force.fx = 0;
+            (p+1)->force.fy = 0;
+            (p+1)->force.fz = 0;
+            (p+1)->position.x = 108.2*10e6;
+            (p+1)->position.y = 0;
+            (p+1)->position.z = 0;
+            (p+1)->mass = 4.87*1e24;
+
+            (p+2)->velocity.vx = 29.8;
+            (p+2)->velocity.vy = 0.0;
+            (p+2)->velocity.vz = 0.0;
+            (p+2)->force.fx = 0;
+            (p+2)->force.fy = 0;
+            (p+2)->force.fz = 0;
+            (p+2)->position.x = 149.6*10e6;
+            (p+2)->position.y = 0;
+            (p+2)->position.z = 0;
+            (p+2)->mass = 5.97*1e24;
+
+            (p+3)->velocity.vx = 24.1;
+            (p+3)->velocity.vy = 0.0;
+            (p+3)->velocity.vz = 0.0;
+            (p+3)->force.fx = 0;
+            (p+3)->force.fy = 0;
+            (p+3)->force.fz = 0;
+            (p+3)->position.x = 228*10e6;
+            (p+3)->position.y = 0;
+            (p+3)->position.z = 0;
+            (p+3)->mass = 0.642*1e24;
+
+            (p+4)->velocity.vx = 13.1;
+            (p+4)->velocity.vy = 0.0;
+            (p+4)->velocity.vz = 0.0;
+            (p+4)->force.fx = 0;
+            (p+4)->force.fy = 0;
+            (p+4)->force.fz = 0;
+            (p+4)->position.x = 778.5*10e6;
+            (p+4)->position.y = 0;
+            (p+4)->position.z = 0;
+            (p+4)->mass = 1.898*1e27;
+
+            (p+5)->velocity.vx = 9.7;
+            (p+5)->velocity.vy = 0.0;
+            (p+5)->velocity.vz = 0.0;
+            (p+5)->force.fx = 0;
+            (p+5)->force.fy = 0;
+            (p+5)->force.fz = 0;
+            (p+5)->position.x = 1432*10e6;
+            (p+5)->position.y = 0;
+            (p+5)->position.z = 0;
+            (p+5)->mass = 5.68*1e26;
+
+            (p+6)->velocity.vx = 6.8;
+            (p+6)->velocity.vy = 0.0;
+            (p+6)->velocity.vz = 0.0;
+            (p+6)->force.fx = 0;
+            (p+6)->force.fy = 0;
+            (p+6)->force.fz = 0;
+            (p+6)->position.x = 2867*10e6;
+            (p+6)->position.y = 0;
+            (p+6)->position.z = 0;
+            (p+6)->mass = 8.6*1e25;
+
+            (p+7)->velocity.vx = 5.4;
+            (p+7)->velocity.vy = 0.0;
+            (p+7)->velocity.vz = 0.0;
+            (p+7)->force.fx = 0;
+            (p+7)->force.fy = 0;
+            (p+7)->force.fz = 0;
+            (p+7)->position.x = 4515*10e6;
+            (p+7)->position.y = 0;
+            (p+7)->position.z = 0;
+            (p+7)->mass = 1.02*1e26;
+            break;
+        case 3:
+            break; // TODO
+        default:
+            cout << "Invalid init type: " << flag << endl;
+            exit(1);
+    }
 }
 
 double calculateEuclideanDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
