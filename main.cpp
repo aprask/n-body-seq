@@ -82,8 +82,8 @@ int main (int argc, char* argv[]) {
                                 std::string token;
                                 int i = 0;
                                 while (getline(s, token, '\t')) {
-                                    i++; // this gets us the num of particles -- every 10 cols
-                                    if (!(i % 10)) {
+                                    i++;
+                                    if (!(i % 10)) { // this gets us the num of particles -- every 10 cols we have a particle
                                         N++;
                                     }
                                 }
@@ -98,68 +98,81 @@ int main (int argc, char* argv[]) {
                             while (getline(sourceFile, line)) {
                                 std::stringstream s(line);
                                 std::string token;
-                                int tokenIdx = 1;
+                                int tokenIdx = 0;
                                 int i = 0;
                                 while (getline(s, token, '\t')) {
+                                    if (tokenIdx == 11) {
+                                        std::cout << "Token Index: " << tokenIdx << std::endl;
+                                        tokenIdx = 1;
+                                        i++;
+                                    }
                                     switch (tokenIdx) {
+                                        case 0:
+                                            tokenIdx++;
+                                            break;
                                         case 1:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->mass = stod(token);
                                             std::cout << "Mass: " << (particleField+i)->mass << std::endl;
                                             break; // mass
                                         case 2:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->position.x = stod(token);
                                             std::cout << "X: " << (particleField+i)->position.x << std::endl;
                                             break; // x
                                         case 3:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->position.y = stod(token);
                                             std::cout << "Y: " << (particleField+i)->position.y << std::endl;
                                             break; // y
                                         case 4:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->position.z = stod(token);
                                             std::cout << "Z: " << (particleField+i)->position.z << std::endl;
                                             break; // z
                                         case 5:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->velocity.vx = stod(token);
                                             std::cout << "Vx: " << (particleField+i)->velocity.vx << std::endl;
                                             break; // vx
                                         case 6:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->velocity.vy = stod(token);
                                             std::cout << "Vy: " << (particleField+i)->velocity.vy << std::endl;
                                             break; // vy
                                         case 7:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->velocity.vz = stod(token);
                                             std::cout << "Vz: " << (particleField+i)->velocity.vz << std::endl;
                                             break; // vz
                                         case 8:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->force.fx = stod(token);
                                             std::cout << "Fx: " << (particleField+i)->force.fx << std::endl;
                                             break; // fx
                                         case 9:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->force.fy = stod(token);
                                             std::cout << "Fy: " << (particleField+i)->force.fy << std::endl;
                                             break; // fy
                                         case 10:
+                                            std::cout << "Token Index: " << tokenIdx << std::endl;
                                             tokenIdx++;
                                             (particleField+i)->force.fz = stod(token);
                                             std::cout << "Fz: " << (particleField+i)->force.fz << std::endl;
                                             break; // fz
-                                        case 11:
-                                            tokenIdx = 1;
-                                            i++;
-                                            break;
                                         default:
                                             break;
-                                    }
-                                    
+                                    }                                    
                                 }
                         }
                         sourceFile.close();
@@ -184,6 +197,9 @@ int main (int argc, char* argv[]) {
             (particleField+i)->position.y = rand() % 100000;
             (particleField+i)->position.z = rand() % 100000;
             (particleField+i)->mass = rand() % 10000000000;
+            (particleField+i)->force.fx = rand() % 100000;
+            (particleField+i)->force.fy = rand() % 100000;
+            (particleField+i)->force.fz = rand() % 100000;
         }
     }
     if (!particleField) {
@@ -198,14 +214,14 @@ int main (int argc, char* argv[]) {
     dataFile.open("results.tsv", std::ios::trunc);
     auto global_time = std::chrono::steady_clock::now();
     for (int i = 0; i < TIME_STEPS; ++i) {
-        for (int k = 0; k < N; ++k) {
+        for (int k = 0; k < N; ++k) { // resets the force
             (particleField+k)->force.fx = 0;
             (particleField+k)->force.fy = 0;
             (particleField+k)->force.fz = 0;
         }
         for (int j = 0; j < N; ++j) {
            for (int k = 0; k < N; ++k) {
-                if (k == j) continue;
+                if (k == j) continue; // skipping when particle = particle
                 double totalForce = calculateForce((particleField+j), (particleField+k));
                 double distance = calculateEuclideanDistance(
                     (particleField+j)->position.x,
@@ -214,7 +230,7 @@ int main (int argc, char* argv[]) {
                     (particleField+k)->position.x,
                     (particleField+k)->position.y,
                     (particleField+k)->position.z
-                );    
+                );
                 (particleField+j)->force.fx += calculateForceComponent(
                     totalForce,
                     (particleField+j)->position.x,
@@ -233,20 +249,36 @@ int main (int argc, char* argv[]) {
                     (particleField+k)->position.z,
                     distance
                 );
-    
+                std::cout << "Particle " << j << "'s Force in 3D (" 
+                << (particleField+j)->force.fx << ","
+                << (particleField+j)->force.fy << ","
+                << (particleField+j)->force.fz << ")" << std::endl;
+     
                 (particleField+j)->acceleration.ax = calculateAcceleration((particleField+j)->force.fx, (particleField+j)->mass);
                 (particleField+j)->acceleration.ay = calculateAcceleration((particleField+j)->force.fy, (particleField+j)->mass);
                 (particleField+j)->acceleration.az = calculateAcceleration((particleField+j)->force.fz, (particleField+j)->mass);
-    
+                std::cout << "Particle " << j << "'s Acceleration in 3D (" 
+                << (particleField+j)->acceleration.ax << ","
+                << (particleField+j)->acceleration.ay << ","
+                << (particleField+j)->acceleration.az << ")" << std::endl;
+
                 (particleField+j)->velocity.vx = calculateVelocity((particleField+j)->velocity.vx, (particleField+j)->acceleration.ax, DELTA_T);
                 (particleField+j)->velocity.vy = calculateVelocity((particleField+j)->velocity.vy, (particleField+j)->acceleration.ay, DELTA_T);
                 (particleField+j)->velocity.vz = calculateVelocity((particleField+j)->velocity.vz, (particleField+j)->acceleration.az, DELTA_T);
+                std::cout << "Particle " << j << "'s Velocity in 3D (" 
+                << (particleField+j)->velocity.vx << ","
+                << (particleField+j)->velocity.vy << ","
+                << (particleField+j)->velocity.vz << ")" << std::endl;
     
                 (particleField+j)->position.x = calculatePosition((particleField+j)->position.x, (particleField+j)->velocity.vx, DELTA_T);
                 (particleField+j)->position.y = calculatePosition((particleField+j)->position.y, (particleField+j)->velocity.vy, DELTA_T);
                 (particleField+j)->position.z = calculatePosition((particleField+j)->position.z, (particleField+j)->velocity.vz, DELTA_T);
+                std::cout << "Particle " << j << "'s Position in 3D (" 
+                << (particleField+j)->position.x << ","
+                << (particleField+j)->position.y << ","
+                << (particleField+j)->position.z << ")" << std::endl;
                 
-                if (!(i % DUMP_RATE)) {
+                if (!(i % DUMP_RATE)) { // we dump iff when i modulo dump rate eq 0
                     dataFile << N << "\t";
                     for (int l = 0; l < N; ++l) {
                         dataFile << (particleField+l)->mass << "\t";
