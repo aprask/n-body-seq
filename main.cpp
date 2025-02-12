@@ -66,7 +66,7 @@ int main (int argc, char* argv[]) {
         cerr << "Invalid number of arguments <" << argc << ">" << ". Expected " << ARGS << endl;
         return 1;
     } else {
-        for (int i = 1; i < ARGS-1; i++) {
+        for (int i = 1; i < ARGS; i++) {
             for (int j = 0; j < strlen(argv[i]); j++) {
                 if (!isdigit(argv[i][j])) {
                     if (i == 1) {
@@ -162,7 +162,7 @@ int main (int argc, char* argv[]) {
         for (int i = 0; i < N; ++i) {
             (particleField+i)->velocity.vx = rand() % 100000;
             (particleField+i)->velocity.vy = rand() % 100000;
-            (particleField+i)->velocity.vx = rand() % 100000;
+            (particleField+i)->velocity.vz = rand() % 100000;
             (particleField+i)->position.x = rand() % 100000;
             (particleField+i)->position.y = rand() % 100000;
             (particleField+i)->position.z = rand() % 100000;
@@ -187,7 +187,7 @@ int main (int argc, char* argv[]) {
         }
         for (int j = 0; j < N; ++j) {
             cout << "Particle " << j << endl;
-            for (int k = 0; k < N; ++k) {
+           for (int k = 0; k < N; ++k) {
                 if (k == j) {
                     cout << "Skipping particle " << k << endl;
                     continue;
@@ -243,22 +243,26 @@ int main (int argc, char* argv[]) {
                 cout << "Time Step " << j << " position: (" << (particleField+j)->position.x << "," << (particleField+j)->position.y << "," << (particleField+j)->position.z << ")" << endl;
                 
                 if (!(i % DUMP_RATE)) {
-                    dataFile << N << "\t"; // num of particles for tsv
-                    dataFile << (particleField+j)->mass << "\t";
-                    dataFile << (particleField+j)->position.x << "\t";
-                    dataFile << (particleField+j)->position.y << "\t";
-                    dataFile << (particleField+j)->position.z << "\t";
-                    dataFile << (particleField+j)->velocity.vx << "\t";
-                    dataFile << (particleField+j)->velocity.vy << "\t";
-                    dataFile << (particleField+j)->velocity.vz << "\t";
-                    dataFile << (particleField+j)->force.fx << "\t";
-                    dataFile << (particleField+j)->force.fy << "\t";
-                    dataFile << (particleField+j)->force.fz << endl;
+                    dataFile << N << "\t";
+                    for (int l = 0; l < N; ++l) {
+                        dataFile << (particleField+l)->mass << "\t";
+                        dataFile << (particleField+l)->position.x << "\t";
+                        dataFile << (particleField+l)->position.y << "\t";
+                        dataFile << (particleField+l)->position.z << "\t";
+                        dataFile << (particleField+l)->velocity.vx << "\t";
+                        dataFile << (particleField+l)->velocity.vy << "\t";
+                        dataFile << (particleField+l)->velocity.vz << "\t";
+                        dataFile << (particleField+l)->force.fx << "\t";
+                        dataFile << (particleField+l)->force.fy << "\t";
+                        dataFile << (particleField+l)->force.fz << "\t";
+                    }
+                    dataFile << endl;
                 }
             }
         }
     }
     dataFile.close();
+    free(particleField);
     return 0;
 }
 

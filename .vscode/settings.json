@@ -10,6 +10,7 @@
         "fstream": "cpp",
         "iosfwd": "cpp",
         "xstring": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "xiosbase": "cpp"
     }
 }
