@@ -7,15 +7,12 @@
 #include <cstring>
 #include <filesystem>
 #include <sstream>
-
-using namespace std;
-using namespace std::filesystem;
+#include <chrono>
 
 #define ARGS 5
-#define SOLAR_N 3
 
 const double G = 6.674*pow(10,-11); // G for grav force
-const double SOFTENING_FACTOR = 0.0001; // this is just an arbitary float (I wasn't sure what "softening factor" actuall was...)
+const double SOFTENING_FACTOR = 0.001; // this is just an arbitary float (I wasn't sure what "softening factor" actuall was...)
 
 double calculateForceComponent(double mass1, double coordinate1, double mass2, double coordinate2);
 double calculateAcceleration(double force, double mass);
@@ -63,79 +60,69 @@ int main (int argc, char* argv[]) {
     size_t N = 0;
     struct particleNode* particleField;
     if (argc != ARGS) {
-        cerr << "Invalid number of arguments <" << argc << ">" << ". Expected " << ARGS << endl;
+        std::cerr << "Invalid number of arguments <" << argc << ">" << ". Expected " << ARGS << std::endl;
         return 1;
     } else {
         for (int i = 1; i < ARGS; i++) {
             for (int j = 0; j < strlen(argv[i]); j++) {
                 if (!isdigit(argv[i][j])) {
                     if (i == 1) {
-                        string file = argv[i];
+                        std::string file = argv[i];
                         file = file += ".tsv";
-                        ifstream sourceFile(file);
+                        std::ifstream sourceFile(file);
                         if (!sourceFile) {
-                            cerr << "Failed to open file: " << argv[i] << endl;
+                            std::cerr << "Failed to open file: " << argv[i] << std::endl;
                             return 1;
                         }
                         if (sourceFile.is_open()) {
                             readFromFile = true;
-                            string line;
-                            while(getline(sourceFile, line)) { // wasn't sure if there was a cleaner way to get the num of lines in a file
-                                N++; // particles delinated by a line and their attribs delinated by a tab
+                            std::string line;
+                            while(getline(sourceFile, line)) {
+                                N++;
                             }
                             particleField = (struct particleNode*)malloc(sizeof(struct particleNode) * N);
                             if (!particleField) {
-                                cerr << "Cannot dynamically allocate mem for particle field" << endl;
+                                std::cerr << "Cannot dynamically allocate mem for particle field" << std::endl;
                                 return -1;
                             }
                             sourceFile.close();
-                            ifstream sourceFile(file);
+                            std::ifstream sourceFile(file);
                             int i = 0;
                             while (getline(sourceFile, line)) {
-                                stringstream s(line);
-                                string token;
+                                std::stringstream s(line);
+                                std::string token;
                                 int attrib = 10; // num of attrib (mass, pos, vel, force)
                                 for (int tokenIdx = 1; getline(s, token, '\t'); ++tokenIdx) {
                                     switch (tokenIdx) {
                                         case 1:
                                             (particleField+i)->mass = stod(token);
-                                            cout << "mass: " << (particleField+i)->mass << endl;
                                             break; // mass
                                         case 2:
                                             (particleField+i)->position.x = stod(token);
-                                            cout << "x: " << (particleField+i)->position.x << endl;
                                             break; // x
                                         case 3:
                                             (particleField+i)->position.y = stod(token);
-                                            cout << "y: " << (particleField+i)->position.y << endl;
                                             break; // y
                                         case 4:
                                             (particleField+i)->position.z = stod(token);
-                                            cout << "z: " << (particleField+i)->position.z << endl;
                                             break; // z
                                         case 5:
                                             (particleField+i)->velocity.vx = stod(token);
-                                            cout << "vx: " << (particleField+i)->velocity.vx << endl;
                                             break; // vx
                                         case 6:
                                             (particleField+i)->velocity.vy = stod(token);
-                                            cout << "vy: " << (particleField+i)->velocity.vy << endl;
                                             break; // vy
                                         case 7:
                                             (particleField+i)->velocity.vz = stod(token);
-                                            cout << "vz: " << (particleField+i)->velocity.vz << endl;
                                             break; // vz
                                         case 8:
                                             (particleField+i)->force.fx = stod(token);
-                                            cout << "fx: " << (particleField+i)->force.fx << endl;
                                             break; // fx
                                         case 9:
                                             (particleField+i)->force.fy = stod(token);
-                                            cout << "fy: " << (particleField+i)->force.fy << endl;
                                             break; // fy
                                         case 10:
                                             (particleField+i)->force.fz = stod(token);
-                                            cout << "fz: " << (particleField+i)->force.fz << endl;
                                             break; // fz
                                         default:
                                             break;
@@ -148,7 +135,7 @@ int main (int argc, char* argv[]) {
                         break;
                     }
                     } else {
-                        cerr << "Invalid numerical argument type passed: " << argv[i] << endl;
+                        std::cerr << "Invalid numerical argument type passed: " << argv[i] << std::endl;
                         return 1;
                     }
                 }
@@ -156,8 +143,7 @@ int main (int argc, char* argv[]) {
         }
     }
     if (!readFromFile) {
-        N = stol(argv[1]);
-        cout << "Size of N: " << N << endl;
+        N = std::stol(argv[1]);
         particleField = (struct particleNode*)malloc(sizeof(struct particleNode) * N);
         for (int i = 0; i < N; ++i) {
             (particleField+i)->velocity.vx = rand() % 100000;
@@ -170,15 +156,16 @@ int main (int argc, char* argv[]) {
         }
     }
     if (!particleField) {
-        cerr << "Cannot dynamically allocate mem for particle field" << endl;
+        std::cerr << "Cannot dynamically allocate mem for particle field" << std::endl;
         return -1;
     }
-    size_t DELTA_T = stod(argv[2]);
-    size_t TIME_STEPS = stol(argv[3]);
-    size_t DUMP_RATE = stol(argv[4]);
+    size_t DELTA_T = std::stod(argv[2]);
+    size_t TIME_STEPS = std::stol(argv[3]);
+    size_t DUMP_RATE = std::stol(argv[4]);
     
-    ofstream dataFile;
-    dataFile.open("results.tsv", ios::trunc);
+    std::ofstream dataFile;
+    dataFile.open("results.tsv", std::ios::trunc);
+    auto global_time = std::chrono::steady_clock::now();
     for (int i = 0; i < TIME_STEPS; ++i) {
         for (int k = 0; k < N; ++k) {
             (particleField+k)->force.fx = 0;
@@ -186,17 +173,9 @@ int main (int argc, char* argv[]) {
             (particleField+k)->force.fz = 0;
         }
         for (int j = 0; j < N; ++j) {
-            cout << "Particle " << j << endl;
            for (int k = 0; k < N; ++k) {
-                if (k == j) {
-                    cout << "Skipping particle " << k << endl;
-                    continue;
-                }
-    
+                if (k == j) continue;
                 double totalForce = calculateForce((particleField+j), (particleField+k));
-                cout << "Time Step " << j << " total force on particle " << j << " from particle " << j <<  " is: " << totalForce << endl;
-    
-    
                 double distance = calculateEuclideanDistance(
                     (particleField+j)->position.x,
                     (particleField+j)->position.y,
@@ -204,9 +183,7 @@ int main (int argc, char* argv[]) {
                     (particleField+k)->position.x,
                     (particleField+k)->position.y,
                     (particleField+k)->position.z
-                );
-                cout << "Time Step " << j << " distance in euclidean space: " << distance << endl;
-    
+                );    
                 (particleField+j)->force.fx += calculateForceComponent(
                     totalForce,
                     (particleField+j)->position.x,
@@ -225,22 +202,18 @@ int main (int argc, char* argv[]) {
                     (particleField+k)->position.z,
                     distance
                 );
-                cout << "Time Step " << j << " force component: (" << (particleField+j)->force.fx << "," << (particleField+j)->force.fy << "," << (particleField+j)->force.fz << ")" << endl;
     
                 (particleField+j)->acceleration.ax = calculateAcceleration((particleField+j)->force.fx, (particleField+j)->mass);
                 (particleField+j)->acceleration.ay = calculateAcceleration((particleField+j)->force.fy, (particleField+j)->mass);
                 (particleField+j)->acceleration.az = calculateAcceleration((particleField+j)->force.fz, (particleField+j)->mass);
-                cout << "Time Step " << j << " acceleration: (" << (particleField+j)->acceleration.ax << "," << (particleField+j)->acceleration.ay << "," << (particleField+j)->acceleration.az << ")" << endl;
     
                 (particleField+j)->velocity.vx = calculateVelocity((particleField+j)->velocity.vx, (particleField+j)->acceleration.ax, DELTA_T);
                 (particleField+j)->velocity.vy = calculateVelocity((particleField+j)->velocity.vy, (particleField+j)->acceleration.ay, DELTA_T);
                 (particleField+j)->velocity.vz = calculateVelocity((particleField+j)->velocity.vz, (particleField+j)->acceleration.az, DELTA_T);
-                cout << "Time Step " << j << " velocity: (" << (particleField+j)->velocity.vx << "," << (particleField+j)->velocity.vy << "," << (particleField+j)->velocity.vz << ")" << endl;
     
                 (particleField+j)->position.x = calculatePosition((particleField+j)->position.x, (particleField+j)->velocity.vx, DELTA_T);
                 (particleField+j)->position.y = calculatePosition((particleField+j)->position.y, (particleField+j)->velocity.vy, DELTA_T);
                 (particleField+j)->position.z = calculatePosition((particleField+j)->position.z, (particleField+j)->velocity.vz, DELTA_T);
-                cout << "Time Step " << j << " position: (" << (particleField+j)->position.x << "," << (particleField+j)->position.y << "," << (particleField+j)->position.z << ")" << endl;
                 
                 if (!(i % DUMP_RATE)) {
                     dataFile << N << "\t";
@@ -256,12 +229,16 @@ int main (int argc, char* argv[]) {
                         dataFile << (particleField+l)->force.fy << "\t";
                         dataFile << (particleField+l)->force.fz << "\t";
                     }
-                    dataFile << endl;
+                    dataFile << std::endl;
                 }
             }
         }
     }
     dataFile.close();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - global_time).count();
+    std::ofstream logFile;
+    logFile.open("data.csv", std::ios::app);
+    logFile << N << "," << DELTA_T << "," << TIME_STEPS << "," << duration << std::endl;
     free(particleField);
     return 0;
 }
@@ -276,7 +253,6 @@ double calculateLinearDistance(double coordinate1, double coordinate2) {
 
 double calculateForce(struct particleNode* p1, struct particleNode* p2) {
     double totalMass = p1->mass*p2->mass;
-    cout << "Total Mass: " << totalMass << endl;
     double distance = calculateEuclideanDistance(
         p1->position.x,
         p1->position.y,
@@ -285,7 +261,6 @@ double calculateForce(struct particleNode* p1, struct particleNode* p2) {
         p2->position.y,
         p2->position.z
     );
-    cout << "Distance: " << distance << endl;
     return (distance/abs(distance))*G*(totalMass/(pow(distance,2)+SOFTENING_FACTOR));
 }
 
