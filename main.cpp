@@ -78,7 +78,15 @@ int main (int argc, char* argv[]) {
                             readFromFile = true;
                             std::string line;
                             while(getline(sourceFile, line)) {
-                                N++;
+                                std::stringstream s(line);
+                                std::string token;
+                                int i = 0;
+                                while (getline(s, token, '\t')) {
+                                    i++; // this gets us the num of particles -- every 10 cols
+                                    if (!(i % 10)) {
+                                        N++;
+                                    }
+                                }
                             }
                             particleField = (struct particleNode*)malloc(sizeof(struct particleNode) * N);
                             if (!particleField) {
@@ -87,49 +95,72 @@ int main (int argc, char* argv[]) {
                             }
                             sourceFile.close();
                             std::ifstream sourceFile(file);
-                            int i = 0;
                             while (getline(sourceFile, line)) {
                                 std::stringstream s(line);
                                 std::string token;
-                                int attrib = 10; // num of attrib (mass, pos, vel, force)
-                                for (int tokenIdx = 1; getline(s, token, '\t'); ++tokenIdx) {
+                                int tokenIdx = 1;
+                                int i = 0;
+                                while (getline(s, token, '\t')) {
                                     switch (tokenIdx) {
                                         case 1:
+                                            tokenIdx++;
                                             (particleField+i)->mass = stod(token);
+                                            std::cout << "Mass: " << (particleField+i)->mass << std::endl;
                                             break; // mass
                                         case 2:
+                                            tokenIdx++;
                                             (particleField+i)->position.x = stod(token);
+                                            std::cout << "X: " << (particleField+i)->position.x << std::endl;
                                             break; // x
                                         case 3:
+                                            tokenIdx++;
                                             (particleField+i)->position.y = stod(token);
+                                            std::cout << "Y: " << (particleField+i)->position.y << std::endl;
                                             break; // y
                                         case 4:
+                                            tokenIdx++;
                                             (particleField+i)->position.z = stod(token);
+                                            std::cout << "Z: " << (particleField+i)->position.z << std::endl;
                                             break; // z
                                         case 5:
+                                            tokenIdx++;
                                             (particleField+i)->velocity.vx = stod(token);
+                                            std::cout << "Vx: " << (particleField+i)->velocity.vx << std::endl;
                                             break; // vx
                                         case 6:
+                                            tokenIdx++;
                                             (particleField+i)->velocity.vy = stod(token);
+                                            std::cout << "Vy: " << (particleField+i)->velocity.vy << std::endl;
                                             break; // vy
                                         case 7:
+                                            tokenIdx++;
                                             (particleField+i)->velocity.vz = stod(token);
+                                            std::cout << "Vz: " << (particleField+i)->velocity.vz << std::endl;
                                             break; // vz
                                         case 8:
+                                            tokenIdx++;
                                             (particleField+i)->force.fx = stod(token);
+                                            std::cout << "Fx: " << (particleField+i)->force.fx << std::endl;
                                             break; // fx
                                         case 9:
+                                            tokenIdx++;
                                             (particleField+i)->force.fy = stod(token);
+                                            std::cout << "Fy: " << (particleField+i)->force.fy << std::endl;
                                             break; // fy
                                         case 10:
+                                            tokenIdx++;
                                             (particleField+i)->force.fz = stod(token);
+                                            std::cout << "Fz: " << (particleField+i)->force.fz << std::endl;
                                             break; // fz
+                                        case 11:
+                                            tokenIdx = 1;
+                                            i++;
+                                            break;
                                         default:
                                             break;
-                                            
                                     }
+                                    
                                 }
-                                i++; 
                         }
                         sourceFile.close();
                         break;
@@ -252,6 +283,8 @@ double calculateLinearDistance(double coordinate1, double coordinate2) {
 }
 
 double calculateForce(struct particleNode* p1, struct particleNode* p2) {
+    std::cout << "Mass1 =" << p1->mass << std::endl;
+    std::cout << "Mass2 =" << p2->mass << std::endl; 
     double totalMass = p1->mass*p2->mass;
     double distance = calculateEuclideanDistance(
         p1->position.x,
