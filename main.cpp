@@ -8,11 +8,12 @@
 #include <filesystem>
 #include <sstream>
 #include <chrono>
+#include <ctime>
 
 #define ARGS 5
 
 const double G = 6.674*pow(10,-11); // G for grav force
-const double SOFTENING_FACTOR = 0.001; // this is just an arbitary float (I wasn't sure what "softening factor" actuall was...)
+const double SOFTENING_FACTOR = 0.00001; // this is just an arbitary float (I wasn't sure what "softening factor" actuall was...)
 
 double calculateForceComponent(double mass1, double coordinate1, double mass2, double coordinate2);
 double calculateAcceleration(double force, double mass);
@@ -101,13 +102,13 @@ int main (int argc, char* argv[]) {
                                 int tokenIdx = 0;
                                 int i = 0;
                                 while (getline(s, token, '\t')) {
-                                    if (tokenIdx == 11) {
+                                    if (tokenIdx > 10) {
                                         std::cout << "Token Index: " << tokenIdx << std::endl;
                                         tokenIdx = 1;
                                         i++;
                                     }
                                     switch (tokenIdx) {
-                                        case 0:
+                                        case 0: // we skip the first col (which is particles)
                                             tokenIdx++;
                                             break;
                                         case 1:
@@ -211,19 +212,27 @@ int main (int argc, char* argv[]) {
     size_t DUMP_RATE = std::stol(argv[4]);
     
     std::ofstream dataFile;
-    dataFile.open("results.tsv", std::ios::trunc);
+    char buffer[80];
+    // https://cplusplus.com/reference/ctime/localtime/
+    std::time_t now; // time val
+    struct tm* date; // contains components as it relates to time
+    std::time(&now);
+    date = std::localtime(&now);
+    // https://cplusplus.com/reference/ctime/strftime/
+    std::strftime(buffer, 80, "results_%B_%A_%H_%M_%S.tsv", date); // I needed a way to make unique files (date seemed appropriate)
+    dataFile.open(buffer, std::ios::trunc);
     auto global_time = std::chrono::steady_clock::now();
     for (int i = 0; i < TIME_STEPS; ++i) {
-        for (int k = 0; k < N; ++k) { // resets the force
+        for (int k = 0; k < N; ++k) { // resets the force components
             (particleField+k)->force.fx = 0;
             (particleField+k)->force.fy = 0;
             (particleField+k)->force.fz = 0;
         }
         for (int j = 0; j < N; ++j) {
-           for (int k = 0; k < N; ++k) {
+           for (int k = j+1; k < N; ++k) {
                 if (k == j) continue; // skipping when particle = particle
                 double totalForce = calculateForce((particleField+j), (particleField+k));
-                double distance = calculateEuclideanDistance(
+                double distanceOfJ = calculateEuclideanDistance(
                     (particleField+j)->position.x,
                     (particleField+j)->position.y,
                     (particleField+j)->position.z,
@@ -231,28 +240,63 @@ int main (int argc, char* argv[]) {
                     (particleField+k)->position.y,
                     (particleField+k)->position.z
                 );
+
+                double distanceOfK = calculateEuclideanDistance(
+                    (particleField+k)->position.x,
+                    (particleField+k)->position.y,
+                    (particleField+k)->position.z,
+                    (particleField+j)->position.x,
+                    (particleField+j)->position.y,
+                    (particleField+j)->position.z
+                );
+
                 (particleField+j)->force.fx += calculateForceComponent(
                     totalForce,
                     (particleField+j)->position.x,
                     (particleField+k)->position.x,
-                    distance
+                    distanceOfJ
                 );
                 (particleField+j)->force.fy += calculateForceComponent(
                     totalForce, 
                     (particleField+j)->position.y,
                     (particleField+k)->position.y,
-                    distance
+                    distanceOfJ
                 );
                 (particleField+j)->force.fz += calculateForceComponent(
                     totalForce, 
                     (particleField+j)->position.z,
                     (particleField+k)->position.z,
-                    distance
+                    distanceOfJ
                 );
+                
+                (particleField+k)->force.fx -= calculateForceComponent(
+                    totalForce,
+                    (particleField+k)->position.x,
+                    (particleField+j)->position.x,
+                    distanceOfK
+                );
+                (particleField+k)->force.fy -= calculateForceComponent(
+                    totalForce, 
+                    (particleField+k)->position.y,
+                    (particleField+j)->position.y,
+                    distanceOfK
+                );
+                (particleField+k)->force.fz -= calculateForceComponent(
+                    totalForce, 
+                    (particleField+k)->position.z,
+                    (particleField+j)->position.z,
+                    distanceOfK
+                );
+
                 std::cout << "Particle " << j << "'s Force in 3D (" 
                 << (particleField+j)->force.fx << ","
                 << (particleField+j)->force.fy << ","
                 << (particleField+j)->force.fz << ")" << std::endl;
+
+                std::cout << "Particle " << k << "'s Force in 3D (" 
+                << (particleField+k)->force.fx << ","
+                << (particleField+k)->force.fy << ","
+                << (particleField+k)->force.fz << ")" << std::endl;
      
                 (particleField+j)->acceleration.ax = calculateAcceleration((particleField+j)->force.fx, (particleField+j)->mass);
                 (particleField+j)->acceleration.ay = calculateAcceleration((particleField+j)->force.fy, (particleField+j)->mass);
@@ -262,6 +306,14 @@ int main (int argc, char* argv[]) {
                 << (particleField+j)->acceleration.ay << ","
                 << (particleField+j)->acceleration.az << ")" << std::endl;
 
+                (particleField+k)->acceleration.ax = calculateAcceleration((particleField+k)->force.fx, (particleField+k)->mass);
+                (particleField+k)->acceleration.ay = calculateAcceleration((particleField+k)->force.fy, (particleField+k)->mass);
+                (particleField+k)->acceleration.az = calculateAcceleration((particleField+k)->force.fz, (particleField+k)->mass);
+                std::cout << "Particle " << k << "'s Acceleration in 3D (" 
+                << (particleField+k)->acceleration.ax << ","
+                << (particleField+k)->acceleration.ay << ","
+                << (particleField+k)->acceleration.az << ")" << std::endl;
+
                 (particleField+j)->velocity.vx = calculateVelocity((particleField+j)->velocity.vx, (particleField+j)->acceleration.ax, DELTA_T);
                 (particleField+j)->velocity.vy = calculateVelocity((particleField+j)->velocity.vy, (particleField+j)->acceleration.ay, DELTA_T);
                 (particleField+j)->velocity.vz = calculateVelocity((particleField+j)->velocity.vz, (particleField+j)->acceleration.az, DELTA_T);
@@ -269,6 +321,14 @@ int main (int argc, char* argv[]) {
                 << (particleField+j)->velocity.vx << ","
                 << (particleField+j)->velocity.vy << ","
                 << (particleField+j)->velocity.vz << ")" << std::endl;
+
+                (particleField+k)->velocity.vx = calculateVelocity((particleField+k)->velocity.vx, (particleField+k)->acceleration.ax, DELTA_T);
+                (particleField+k)->velocity.vy = calculateVelocity((particleField+k)->velocity.vy, (particleField+k)->acceleration.ay, DELTA_T);
+                (particleField+k)->velocity.vz = calculateVelocity((particleField+k)->velocity.vz, (particleField+k)->acceleration.az, DELTA_T);
+                std::cout << "Particle " << k << "'s Velocity in 3D (" 
+                << (particleField+k)->velocity.vx << ","
+                << (particleField+k)->velocity.vy << ","
+                << (particleField+k)->velocity.vz << ")" << std::endl;
     
                 (particleField+j)->position.x = calculatePosition((particleField+j)->position.x, (particleField+j)->velocity.vx, DELTA_T);
                 (particleField+j)->position.y = calculatePosition((particleField+j)->position.y, (particleField+j)->velocity.vy, DELTA_T);
@@ -277,6 +337,13 @@ int main (int argc, char* argv[]) {
                 << (particleField+j)->position.x << ","
                 << (particleField+j)->position.y << ","
                 << (particleField+j)->position.z << ")" << std::endl;
+                (particleField+k)->position.x = calculatePosition((particleField+k)->position.x, (particleField+k)->velocity.vx, DELTA_T);
+                (particleField+k)->position.y = calculatePosition((particleField+k)->position.y, (particleField+k)->velocity.vy, DELTA_T);
+                (particleField+k)->position.z = calculatePosition((particleField+k)->position.z, (particleField+k)->velocity.vz, DELTA_T);
+                std::cout << "Particle " << k << "'s Position in 3D (" 
+                << (particleField+k)->position.x << ","
+                << (particleField+k)->position.y << ","
+                << (particleField+k)->position.z << ")" << std::endl;
                 
                 if (!(i % DUMP_RATE)) { // we dump iff when i modulo dump rate eq 0
                     dataFile << N << "\t";
@@ -326,7 +393,7 @@ double calculateForce(struct particleNode* p1, struct particleNode* p2) {
         p2->position.y,
         p2->position.z
     );
-    return (distance/abs(distance))*G*(totalMass/(pow(distance,2)+SOFTENING_FACTOR));
+    return G*(totalMass/(pow(distance,2)+SOFTENING_FACTOR));
 }
 
 double calculatePosition(double coordinate, double velocity, double delta_t) {
