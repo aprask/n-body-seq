@@ -12,402 +12,293 @@
 
 #define ARGS 5
 
-const double G = 6.674*pow(10,-11); // G for grav force
-const double SOFTENING_FACTOR = 0.00001; // this is just an arbitary float (I wasn't sure what "softening factor" actuall was...)
+class Particle {
+    private:
+        const long double G = 6.674*pow(10,-11);
+        const long double SOFTENING_FACTOR = 0.000001;
+        struct acceleration {
+            double ax;
+            double ay;
+            double az;
+        };
+        struct position {
+            double x;
+            double y;
+            double z;
+        };
+        struct velocity {
+            double vx;
+            double vy;
+            double vz;
+        };        
+        struct force {
+            double fx;
+            double fy;
+            double fz;
+        };
 
-double calculateForceComponent(double mass1, double coordinate1, double mass2, double coordinate2);
-double calculateAcceleration(double force, double mass);
-double calculatePosition(double coordinate, double velocity, double delta_t);
-double calculateVelocity(double velocity, double acceleration, double delta_t);
-double calculateLinearDistance(double coordinate1, double coordinate2);
-double calculateEuclideanDistance(double x1, double y1, double z1, double x2, double y2, double z2);
-double calculateForce(struct particleNode* p1, struct particleNode* p2);
+    public:
+        struct force force;
+        struct velocity velocity;
+        struct acceleration acceleration;
+        struct position position;
+        long double mass;
 
-struct acceleration {
-    double ax;
-    double ay;
-    double az;
+        Particle() {
+            this->force.fx = 0;
+            this->force.fy = 0;
+            this->force.fz = 0;
+            this->velocity.vx = rand() % 10000000;
+            this->velocity.vy = rand() % 10000000;
+            this->velocity.vz = rand() % 10000000;
+            this->acceleration.ax = rand() % 10000000;
+            this->acceleration.ay = rand() % 10000000;
+            this->acceleration.az = rand() % 10000000;
+            this->position.x = rand() % 10000000;
+            this->position.y = rand() % 10000000;
+            this->position.z = rand() % 10000000;
+            this->mass = rand() % 1000000000000;
+        }
+
+        Particle(
+            long double forceFx, 
+            long double forceFy, 
+            long double forceFz,
+            long double velocityVx,
+            long double velocityVy,
+            long double velocityVz,
+            long double accelerationAx,
+            long double accelerationAy,
+            long double accelerationAz,
+            long double positionX,
+            long double positionY,
+            long double positionZ,
+            long double mass
+        ) {
+            this->force.fx = forceFx;
+            this->force.fy = forceFy;
+            this->force.fz = forceFz;
+            this->velocity.vx = velocityVx;
+            this->velocity.vy = velocityVy;
+            this->velocity.vz = velocityVz;
+            this->acceleration.ax = accelerationAx;
+            this->acceleration.ay = accelerationAy;
+            this->acceleration.az = accelerationAz;
+            this->position.x = positionX;
+            this->position.y = positionY;
+            this->position.z = positionZ;
+            this->mass = mass;
+        }
+
+        ~Particle() {}
+
+        long calculateForceDirectionFx(const Particle& otherParticle) {
+            long double forceMagnitude = this->calculateForceMagnitude(otherParticle);
+            long double distanceVector = this->calculateEuclideanDistance(otherParticle);
+            long double linearDifference = this->position.x - otherParticle.position.x;
+            return forceMagnitude*(linearDifference/distanceVector);
+        }
+
+        long calculateForceDirectionFy(const Particle& otherParticle) {
+            long double forceMagnitude = this->calculateForceMagnitude(otherParticle);
+            long double distanceVector = this->calculateEuclideanDistance(otherParticle);
+            long double linearDifference = this->position.y - otherParticle.position.y;
+            return forceMagnitude*(linearDifference/distanceVector);
+        }
+
+        long calculateForceDirectionFz(const Particle& otherParticle) {
+            long double forceMagnitude = this->calculateForceMagnitude(otherParticle);
+            long double distanceVector = this->calculateEuclideanDistance(otherParticle);
+            long double linearDifference = this->position.z - otherParticle.position.z;
+            return forceMagnitude*(linearDifference/distanceVector);
+        }
+
+        long double calculateForceMagnitude(const Particle& otherParticle) {
+            long double totalMassScalar = this->mass * otherParticle.mass;
+            long double distanceVector = this->calculateEuclideanDistance(otherParticle);
+            return G*(totalMassScalar/(pow(distanceVector,2)+SOFTENING_FACTOR));
+        }
+
+        long double calculateEuclideanDistance(const Particle& otherParticle) {
+            return sqrt((pow(this->position.x-otherParticle.position.x,2)
+            + pow(this->position.y-otherParticle.position.y,2),
+            + pow(this->position.z-otherParticle.position.z,2)));
+        }
+
+        long double calculatePositionX(const long double delta_t) {
+            return this->position.x * (this->velocity.vx*delta_t);
+        }
+
+        long double calculatePositionY(const long double delta_t) {
+            return this->position.y * (this->velocity.vy*delta_t);
+        }
+
+        long double calculatePositionZ(const long double delta_t) {
+            return this->position.z * (this->velocity.vz*delta_t);
+        }
+
+        long double calculateAccelerationX() {
+            return this->force.fx/this->mass;
+        }
+
+        long double calculateAccelerationY() {
+            return this->force.fy/this->mass;
+        }
+
+        long double calculateAccelerationZ() {
+            return this->force.fz/this->mass;
+        }
+
+        long double calculateVelocityX(const long double delta_t) {
+            return this->velocity.vx + this->acceleration.ax*delta_t;
+        }
+
+        long double calculateVelocityY(const long double delta_t) {
+            return this->velocity.vy + this->acceleration.ay*delta_t;
+        }
+
+        long double calculateVelocityZ(const long double delta_t) {
+            return this->velocity.vz + this->acceleration.az*delta_t;
+        }
+
+        long double getForceFX() const {
+            return this->force.fx;
+        }
+
+        void setForceFx(long double forceFx) {
+            this->force.fx = forceFx;
+        }
+
+        long double getForceFy() const {
+            return this->force.fy;
+        }
+
+        void setForceFy(long double forceFy) {
+            this->force.fy = forceFy;
+        }
+
+        long double getForceFz() const {
+            return this->force.fz;
+        }
+
+        void setForceFz(long double forceFz) {
+            this->force.fz = forceFz;
+        }
+
+        long double getVelocityVx() const {
+            return this->velocity.vx;
+        }
+
+        void setVelocityVx(long double velocityVx) {
+            this->velocity.vx = velocityVx;
+        }
+
+        long double getVelocityVy() const {
+            return this->velocity.vy;
+        }
+
+        void setVelocityVy(long double velocityVy) {
+            this->velocity.vy = velocityVy;
+        }
+
+        long double getVelocityVz() const {
+            return this->velocity.vz;
+        }
+
+        void setVelocityVz(long double velocityVz) {
+            this->velocity.vz = velocityVz;
+        }
+
+        long double getAccelerationAx() const {
+            return this->acceleration.ax;
+        }
+
+        void setAccelerationAx(long double accelerationAx) {
+            this->acceleration.ax = accelerationAx;
+        }
+
+        long double getAccelerationAy() const {
+            return this->acceleration.ay;
+        }
+
+        void setAccelerationAy(long double accelerationAy) {
+            this->acceleration.ay = accelerationAy;
+        }
+        
+        long double getAccelerationAz() const {
+            return this->acceleration.az;
+        }
+
+        void setAccelerationAz(long double accelerationAz) {
+            this->acceleration.az = accelerationAz;
+        }
+
+        long double getPositionX() const {
+            return this->position.x;
+        }
+
+        void setPositionX(long double positionX) {
+            this->position.x = positionX;
+        }
+
+        long double getPositionY() const {
+            return this->position.y;
+        }
+
+        void setPositionY(long double positionY) {
+            this->position.y = positionY;
+        }
+
+        long double getPositionZ() const {
+            return this->position.z;
+        }
+
+        void setPositionZ(long double positionZ) {
+            this->position.z = positionZ;
+        }
+
+        long double getMass() const {
+            return this->mass;
+        }
+
+        void setMass(long double mass) {
+            this->mass = mass;
+        }
 };
 
-struct position {
-    double x;
-    double y;
-    double z;
-};
-
-struct velocity {
-    double vx;
-    double vy;
-    double vz;
-};
-
-struct force {
-    double fx;
-    double fy;
-    double fz;
-};
-
-struct particleNode {
-    double mass;
-    struct position position;
-    struct velocity velocity;
-    struct force force;
-    struct acceleration acceleration;
-};
-
-
-int main (int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
     bool readFromFile = false;
     size_t N = 0;
-    struct particleNode* particleField;
+    std::vector<Particle*> particleField;
     if (argc != ARGS) {
-        std::cerr << "Invalid number of arguments <" << argc << ">" << ". Expected " << ARGS << std::endl;
+        std::cerr << "Invalid number of arguments <" << argc << ">" << ". Expected <" << ARGS << ">" << std::endl;
         return 1;
     } else {
-        for (int i = 1; i < ARGS; i++) {
-            for (int j = 0; j < strlen(argv[i]); j++) {
-                if (!isdigit(argv[i][j])) {
-                    if (i == 1) {
-                        std::string file = argv[i];
-                        file = file += ".tsv";
-                        std::ifstream sourceFile(file);
-                        if (!sourceFile) {
-                            std::cerr << "Failed to open file: " << argv[i] << std::endl;
-                            return 1;
-                        }
-                        if (sourceFile.is_open()) {
-                            readFromFile = true;
-                            std::string line;
-                            while(getline(sourceFile, line)) {
-                                std::stringstream s(line);
-                                std::string token;
-                                int i = 0;
-                                while (getline(s, token, '\t')) {
-                                    i++;
-                                    if (!(i % 10)) { // this gets us the num of particles -- every 10 cols we have a particle
-                                        N++;
-                                    }
-                                }
-                            }
-                            particleField = (struct particleNode*)malloc(sizeof(struct particleNode) * N);
-                            if (!particleField) {
-                                std::cerr << "Cannot dynamically allocate mem for particle field" << std::endl;
-                                return -1;
-                            }
-                            sourceFile.close();
-                            std::ifstream sourceFile(file);
-                            while (getline(sourceFile, line)) {
-                                std::stringstream s(line);
-                                std::string token;
-                                int tokenIdx = 0;
-                                int i = 0;
-                                while (getline(s, token, '\t')) {
-                                    if (tokenIdx > 10) {
-                                        std::cout << "Token Index: " << tokenIdx << std::endl;
-                                        tokenIdx = 1;
-                                        i++;
-                                    }
-                                    switch (tokenIdx) {
-                                        case 0: // we skip the first col (which is particles)
-                                            tokenIdx++;
-                                            break;
-                                        case 1:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->mass = stod(token);
-                                            std::cout << "Mass: " << (particleField+i)->mass << std::endl;
-                                            break; // mass
-                                        case 2:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->position.x = stod(token);
-                                            std::cout << "X: " << (particleField+i)->position.x << std::endl;
-                                            break; // x
-                                        case 3:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->position.y = stod(token);
-                                            std::cout << "Y: " << (particleField+i)->position.y << std::endl;
-                                            break; // y
-                                        case 4:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->position.z = stod(token);
-                                            std::cout << "Z: " << (particleField+i)->position.z << std::endl;
-                                            break; // z
-                                        case 5:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->velocity.vx = stod(token);
-                                            std::cout << "Vx: " << (particleField+i)->velocity.vx << std::endl;
-                                            break; // vx
-                                        case 6:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->velocity.vy = stod(token);
-                                            std::cout << "Vy: " << (particleField+i)->velocity.vy << std::endl;
-                                            break; // vy
-                                        case 7:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->velocity.vz = stod(token);
-                                            std::cout << "Vz: " << (particleField+i)->velocity.vz << std::endl;
-                                            break; // vz
-                                        case 8:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->force.fx = stod(token);
-                                            std::cout << "Fx: " << (particleField+i)->force.fx << std::endl;
-                                            break; // fx
-                                        case 9:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->force.fy = stod(token);
-                                            std::cout << "Fy: " << (particleField+i)->force.fy << std::endl;
-                                            break; // fy
-                                        case 10:
-                                            std::cout << "Token Index: " << tokenIdx << std::endl;
-                                            tokenIdx++;
-                                            (particleField+i)->force.fz = stod(token);
-                                            std::cout << "Fz: " << (particleField+i)->force.fz << std::endl;
-                                            break; // fz
-                                        default:
-                                            break;
-                                    }                                    
-                                }
-                        }
-                        sourceFile.close();
-                        break;
-                    }
-                    } else {
-                        std::cerr << "Invalid numerical argument type passed: " << argv[i] << std::endl;
+        for (int i = 0; i < ARGS; ++i) {
+            for (int j = 0; j < strlen(argv[i]); ++j) {
+                if (i == 1) {
+                    std::string fileName = argv[i];
+                    fileName = fileName + ".tsv";
+                    std::ifstream sourceFile(fileName);
+                    if (!sourceFile.is_open()) {
+                        std::cerr << "Failed to open file: " << argv[i] << std::endl;
                         return 1;
+                    } else {
+                        readFromFile = true;
+                        std::string line;
+                        while(getline(sourceFile, line)) {
+                            std::stringstream s(line);
+                            std::string token;
+                            int col = 0;
+                            while(getline(s, token, '\t')) {
+                                i++;
+                                if(!(i % 10)) N++;
+                            }
+                        }
                     }
                 }
             }
         }
     }
-    if (!readFromFile) {
-        N = std::stol(argv[1]);
-        particleField = (struct particleNode*)malloc(sizeof(struct particleNode) * N);
-        for (int i = 0; i < N; ++i) {
-            (particleField+i)->velocity.vx = rand() % 100000;
-            (particleField+i)->velocity.vy = rand() % 100000;
-            (particleField+i)->velocity.vz = rand() % 100000;
-            (particleField+i)->position.x = rand() % 100000;
-            (particleField+i)->position.y = rand() % 100000;
-            (particleField+i)->position.z = rand() % 100000;
-            (particleField+i)->mass = rand() % 10000000000;
-            (particleField+i)->force.fx = rand() % 100000;
-            (particleField+i)->force.fy = rand() % 100000;
-            (particleField+i)->force.fz = rand() % 100000;
-        }
-    }
-    if (!particleField) {
-        std::cerr << "Cannot dynamically allocate mem for particle field" << std::endl;
-        return -1;
-    }
-    size_t DELTA_T = std::stod(argv[2]);
-    size_t TIME_STEPS = std::stol(argv[3]);
-    size_t DUMP_RATE = std::stol(argv[4]);
-    
-    std::ofstream dataFile;
-    char buffer[80];
-    // https://cplusplus.com/reference/ctime/localtime/
-    std::time_t now; // time val
-    struct tm* date; // contains components as it relates to time
-    std::time(&now);
-    date = std::localtime(&now);
-    // https://cplusplus.com/reference/ctime/strftime/
-    std::strftime(buffer, 80, "results_%B_%A_%H_%M_%S.tsv", date); // I needed a way to make unique files (date seemed appropriate)
-    dataFile.open(buffer, std::ios::trunc);
-    auto global_time = std::chrono::steady_clock::now();
-    for (int i = 0; i < TIME_STEPS; ++i) {
-        for (int k = 0; k < N; ++k) { // resets the force components
-            (particleField+k)->force.fx = 0;
-            (particleField+k)->force.fy = 0;
-            (particleField+k)->force.fz = 0;
-        }
-        for (int j = 0; j < N; ++j) {
-           for (int k = j+1; k < N; ++k) {
-                if (k == j) continue; // skipping when particle = particle
-                double totalForce = calculateForce((particleField+j), (particleField+k));
-                double distanceOfJ = calculateEuclideanDistance(
-                    (particleField+j)->position.x,
-                    (particleField+j)->position.y,
-                    (particleField+j)->position.z,
-                    (particleField+k)->position.x,
-                    (particleField+k)->position.y,
-                    (particleField+k)->position.z
-                );
-
-                double distanceOfK = calculateEuclideanDistance(
-                    (particleField+k)->position.x,
-                    (particleField+k)->position.y,
-                    (particleField+k)->position.z,
-                    (particleField+j)->position.x,
-                    (particleField+j)->position.y,
-                    (particleField+j)->position.z
-                );
-
-                (particleField+j)->force.fx += calculateForceComponent(
-                    totalForce,
-                    (particleField+j)->position.x,
-                    (particleField+k)->position.x,
-                    distanceOfJ
-                );
-                (particleField+j)->force.fy += calculateForceComponent(
-                    totalForce, 
-                    (particleField+j)->position.y,
-                    (particleField+k)->position.y,
-                    distanceOfJ
-                );
-                (particleField+j)->force.fz += calculateForceComponent(
-                    totalForce, 
-                    (particleField+j)->position.z,
-                    (particleField+k)->position.z,
-                    distanceOfJ
-                );
-                
-                (particleField+k)->force.fx -= calculateForceComponent(
-                    totalForce,
-                    (particleField+k)->position.x,
-                    (particleField+j)->position.x,
-                    distanceOfK
-                );
-                (particleField+k)->force.fy -= calculateForceComponent(
-                    totalForce, 
-                    (particleField+k)->position.y,
-                    (particleField+j)->position.y,
-                    distanceOfK
-                );
-                (particleField+k)->force.fz -= calculateForceComponent(
-                    totalForce, 
-                    (particleField+k)->position.z,
-                    (particleField+j)->position.z,
-                    distanceOfK
-                );
-
-                std::cout << "Particle " << j << "'s Force in 3D (" 
-                << (particleField+j)->force.fx << ","
-                << (particleField+j)->force.fy << ","
-                << (particleField+j)->force.fz << ")" << std::endl;
-
-                std::cout << "Particle " << k << "'s Force in 3D (" 
-                << (particleField+k)->force.fx << ","
-                << (particleField+k)->force.fy << ","
-                << (particleField+k)->force.fz << ")" << std::endl;
-     
-                (particleField+j)->acceleration.ax = calculateAcceleration((particleField+j)->force.fx, (particleField+j)->mass);
-                (particleField+j)->acceleration.ay = calculateAcceleration((particleField+j)->force.fy, (particleField+j)->mass);
-                (particleField+j)->acceleration.az = calculateAcceleration((particleField+j)->force.fz, (particleField+j)->mass);
-                std::cout << "Particle " << j << "'s Acceleration in 3D (" 
-                << (particleField+j)->acceleration.ax << ","
-                << (particleField+j)->acceleration.ay << ","
-                << (particleField+j)->acceleration.az << ")" << std::endl;
-
-                (particleField+k)->acceleration.ax = calculateAcceleration((particleField+k)->force.fx, (particleField+k)->mass);
-                (particleField+k)->acceleration.ay = calculateAcceleration((particleField+k)->force.fy, (particleField+k)->mass);
-                (particleField+k)->acceleration.az = calculateAcceleration((particleField+k)->force.fz, (particleField+k)->mass);
-                std::cout << "Particle " << k << "'s Acceleration in 3D (" 
-                << (particleField+k)->acceleration.ax << ","
-                << (particleField+k)->acceleration.ay << ","
-                << (particleField+k)->acceleration.az << ")" << std::endl;
-
-                (particleField+j)->velocity.vx = calculateVelocity((particleField+j)->velocity.vx, (particleField+j)->acceleration.ax, DELTA_T);
-                (particleField+j)->velocity.vy = calculateVelocity((particleField+j)->velocity.vy, (particleField+j)->acceleration.ay, DELTA_T);
-                (particleField+j)->velocity.vz = calculateVelocity((particleField+j)->velocity.vz, (particleField+j)->acceleration.az, DELTA_T);
-                std::cout << "Particle " << j << "'s Velocity in 3D (" 
-                << (particleField+j)->velocity.vx << ","
-                << (particleField+j)->velocity.vy << ","
-                << (particleField+j)->velocity.vz << ")" << std::endl;
-
-                (particleField+k)->velocity.vx = calculateVelocity((particleField+k)->velocity.vx, (particleField+k)->acceleration.ax, DELTA_T);
-                (particleField+k)->velocity.vy = calculateVelocity((particleField+k)->velocity.vy, (particleField+k)->acceleration.ay, DELTA_T);
-                (particleField+k)->velocity.vz = calculateVelocity((particleField+k)->velocity.vz, (particleField+k)->acceleration.az, DELTA_T);
-                std::cout << "Particle " << k << "'s Velocity in 3D (" 
-                << (particleField+k)->velocity.vx << ","
-                << (particleField+k)->velocity.vy << ","
-                << (particleField+k)->velocity.vz << ")" << std::endl;
-    
-                (particleField+j)->position.x = calculatePosition((particleField+j)->position.x, (particleField+j)->velocity.vx, DELTA_T);
-                (particleField+j)->position.y = calculatePosition((particleField+j)->position.y, (particleField+j)->velocity.vy, DELTA_T);
-                (particleField+j)->position.z = calculatePosition((particleField+j)->position.z, (particleField+j)->velocity.vz, DELTA_T);
-                std::cout << "Particle " << j << "'s Position in 3D (" 
-                << (particleField+j)->position.x << ","
-                << (particleField+j)->position.y << ","
-                << (particleField+j)->position.z << ")" << std::endl;
-                (particleField+k)->position.x = calculatePosition((particleField+k)->position.x, (particleField+k)->velocity.vx, DELTA_T);
-                (particleField+k)->position.y = calculatePosition((particleField+k)->position.y, (particleField+k)->velocity.vy, DELTA_T);
-                (particleField+k)->position.z = calculatePosition((particleField+k)->position.z, (particleField+k)->velocity.vz, DELTA_T);
-                std::cout << "Particle " << k << "'s Position in 3D (" 
-                << (particleField+k)->position.x << ","
-                << (particleField+k)->position.y << ","
-                << (particleField+k)->position.z << ")" << std::endl;
-                
-                if (!(i % DUMP_RATE)) { // we dump iff when i modulo dump rate eq 0
-                    dataFile << N << "\t";
-                    for (int l = 0; l < N; ++l) {
-                        dataFile << (particleField+l)->mass << "\t";
-                        dataFile << (particleField+l)->position.x << "\t";
-                        dataFile << (particleField+l)->position.y << "\t";
-                        dataFile << (particleField+l)->position.z << "\t";
-                        dataFile << (particleField+l)->velocity.vx << "\t";
-                        dataFile << (particleField+l)->velocity.vy << "\t";
-                        dataFile << (particleField+l)->velocity.vz << "\t";
-                        dataFile << (particleField+l)->force.fx << "\t";
-                        dataFile << (particleField+l)->force.fy << "\t";
-                        dataFile << (particleField+l)->force.fz << "\t";
-                    }
-                    dataFile << std::endl;
-                }
-            }
-        }
-    }
-    dataFile.close();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - global_time).count();
-    std::ofstream logFile;
-    logFile.open("data.csv", std::ios::app);
-    logFile << N << "," << DELTA_T << "," << TIME_STEPS << "," << duration << std::endl;
-    free(particleField);
     return 0;
-}
-
-double calculateEuclideanDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
-    return sqrt((pow((x2-x1), 2) + pow((y2-y1), 2) + pow((z2-z1), 2)));
-}
-
-double calculateLinearDistance(double coordinate1, double coordinate2) {
-    return coordinate2-coordinate1;
-}
-
-double calculateForce(struct particleNode* p1, struct particleNode* p2) {
-    std::cout << "Mass1 =" << p1->mass << std::endl;
-    std::cout << "Mass2 =" << p2->mass << std::endl; 
-    double totalMass = p1->mass*p2->mass;
-    double distance = calculateEuclideanDistance(
-        p1->position.x,
-        p1->position.y,
-        p1->position.z,
-        p2->position.x,
-        p2->position.y,
-        p2->position.z
-    );
-    return G*(totalMass/(pow(distance,2)+SOFTENING_FACTOR));
-}
-
-double calculatePosition(double coordinate, double velocity, double delta_t) {
-    return coordinate + velocity*delta_t;
-}
-
-double calculateVelocity(double velocity, double acceleration, double delta_t) {
-    return velocity + acceleration*delta_t;
-}
-
-double calculateAcceleration(double force, double mass) {
-    return force/mass;
-}
-
-double calculateForceComponent(double force, double coordinate1, double coordinate2, double distance) {
-    return force*((coordinate2-coordinate1)/(distance));
 }
