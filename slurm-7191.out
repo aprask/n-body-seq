@@ -1,9 +1,0 @@
-rm *.o nbod
-g++ -c main.cpp
-g++ -o nbod main.o
-rm *.o nbod
-g++ -c main.cpp
-g++ -o nbod main.o
-rm *.o nbod
-g++ -c main.cpp
-g++ -o nbod main.o
