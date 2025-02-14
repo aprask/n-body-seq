@@ -132,21 +132,21 @@ class Particle {
             this->position.z = this->calculatePositionZ(DELTA_T);
         }
 
-        long calculateForceDirectionFx(const Particle* otherParticle) {
+        double calculateForceDirectionFx(const Particle* otherParticle) {
             double forceMagnitude = this->calculateForceMagnitude(otherParticle);
             double distanceVector = this->calculateEuclideanDistance(otherParticle);
             double linearDifference = this->position.x - otherParticle->position.x;
             return forceMagnitude*(linearDifference/distanceVector);
         }
 
-        long calculateForceDirectionFy(const Particle* otherParticle) {
+        double calculateForceDirectionFy(const Particle* otherParticle) {
             double forceMagnitude = this->calculateForceMagnitude(otherParticle);
             double distanceVector = this->calculateEuclideanDistance(otherParticle);
             double linearDifference = this->position.y - otherParticle->position.y;
             return forceMagnitude*(linearDifference/distanceVector);
         }
 
-        long calculateForceDirectionFz(const Particle* otherParticle) {
+        double calculateForceDirectionFz(const Particle* otherParticle) {
             double forceMagnitude = this->calculateForceMagnitude(otherParticle);
             double distanceVector = this->calculateEuclideanDistance(otherParticle);
             double linearDifference = this->position.z - otherParticle->position.z;
@@ -368,6 +368,7 @@ int main(int argc, char* argv[]) {
                             }
                             sourceFile.close();
                             parseFile(fileName, N, &particleField);
+                            break;
                         }
                     } else {
                         std::cerr << "Invalid numerical argument type passed: " << argv[i] << std::endl;
@@ -439,7 +440,6 @@ void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, 
     std::strftime(buffer, 80, "results_%B_%A_%H_%M_%S.tsv", date); // I needed a way to make unique files (date seemed appropriate)
     dataFile.open(buffer, std::ios::trunc);
     auto global_time = std::chrono::high_resolution_clock::now();
-
     for (size_t i = 0; i < TIME_STEPS; ++i) {
         for (size_t j = 0; j < N; ++j) {
             (*particleField)[j]->clearForce();
@@ -453,17 +453,11 @@ void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, 
                 (*particleField)[j]->updateOtherFx((*particleField)[k]);
                 (*particleField)[j]->updateOtherFy((*particleField)[k]);
                 (*particleField)[j]->updateOtherFz((*particleField)[k]);
-
-                (*particleField)[j]->printProperties();
-                (*particleField)[k]->printProperties();
-                
-                if(!(i % DUMP_RATE)) dumpData(N, particleField, &dataFile);
             }
             // calculate positions
-            for (int k = 0; k < N; ++k) {
-                (*particleField)[k]->updatePosition(DELTA_T);
-            }
+            for (int k = 0; k < N; ++k) (*particleField)[k]->updatePosition(DELTA_T);
         }
+        if(!(i % DUMP_RATE)) dumpData(N, particleField, &dataFile);
     }
 
     dataFile.close();
