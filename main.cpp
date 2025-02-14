@@ -12,9 +12,6 @@
 
 #define ARGS 5
 
-void parseFile(const std::string& fileName, int& N, std::vector<Particle*> particleField, std::ifstream sourceFile);
-void particleInitFromFile(const int& tokenIdx, std::vector<Particle*> particleField, const int& classIdx, std::string token);
-
 class Particle {
     private:
         const long double G = 6.674*pow(10,-11);
@@ -269,6 +266,11 @@ class Particle {
         }
 };
 
+
+void parseFile(const std::string& fileName, size_t& N, std::vector<Particle*>* particleField);
+void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, std::string token);
+
+
 int main(int argc, char* argv[]) {
     bool readFromFile = false;
     size_t N = 0;
@@ -277,17 +279,36 @@ int main(int argc, char* argv[]) {
         std::cerr << "Invalid number of arguments <" << argc << ">" << ". Expected <" << ARGS << ">" << std::endl;
         return 1;
     } else {
-        for (int i = 0; i < ARGS; ++i) {
+        for (int i = 1; i < ARGS; ++i) {
             for (int j = 0; j < strlen(argv[i]); ++j) {
-                if (i == 1) {
-                    std::string fileName = argv[i];
-                    fileName = fileName + ".tsv";
-                    std::ifstream sourceFile(fileName);
-                    if (!sourceFile.is_open()) {
-                        std::cerr << "Failed to open file: " << argv[i] << std::endl;
-                        return 1;
+                if (!isdigit(argv[i][j])) {
+                    if (i == 1) {
+                        std::string fileName = argv[i];
+                        fileName = fileName + ".tsv";
+                        std::ifstream sourceFile(fileName);
+                        if (!sourceFile.is_open()) {
+                            std::cerr << "Failed to open file: " << argv[i] << std::endl;
+                            return 1;
+                        } else {
+                            readFromFile = true;
+                            std::string line;
+                            while(getline(sourceFile, line)) {
+                                std::stringstream s(line);
+                                std::string token;
+                                int col = 0;
+                                while(getline(s, token, '\t')) {
+                                    col++;
+                                    if(!(col % 10)) N++;
+                                }
+                            }
+                            sourceFile.close();
+                            std::cout << "I am here" << std::endl;                    
+                            parseFile(fileName, N, &particleField);
+                            break;
+                        }
                     } else {
-                        readFromFile = true;
+                        std::cerr << "Invalid numerical argument type passed: " << argv[i] << std::endl;
+                        return 1;
                     }
                 }
             }
@@ -296,59 +317,66 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void particleInitFromFile(const int& tokenIdx, std::vector<Particle*> particleField, const int& classIdx, std::string token) {
+void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, std::string token) {
     switch (tokenIdx) {
         case 0: // we skip the first col (which is particles)
             break;
         case 1:
-            particleField[classIdx]->mass = stod(token);
+            (*particleField)[classIdx]->setMass(stold(token));
+            std::cout << "Mass: " << (*particleField)[classIdx]->getMass() << std::endl;
             break; // mass
         case 2:
-            particleField[classIdx]->position.x = stod(token);
+            (*particleField)[classIdx]->setPositionX(stold(token));
+            std::cout << "X: " << (*particleField)[classIdx]->getPositionX() << std::endl;
             break; // x
         case 3:
-            particleField[classIdx]->position.y = stod(token);
+            (*particleField)[classIdx]->setPositionY(stold(token));
+            std::cout << "Y: " << (*particleField)[classIdx]->getPositionY() << std::endl;
             break; // y
         case 4:
-            particleField[classIdx]->position.z = stod(token);
+            (*particleField)[classIdx]->setPositionZ(stold(token));
+            std::cout << "Z: " << (*particleField)[classIdx]->getPositionZ() << std::endl;
             break; // z
         case 5:
-            particleField[classIdx]->velocity.vx = stod(token);
+            (*particleField)[classIdx]->setVelocityVx(stold(token));
+            std::cout << "Vx: " << (*particleField)[classIdx]->getVelocityVx() << std::endl;
             break; // vx
         case 6:
-            particleField[classIdx]->velocity.vy = stod(token);
+            (*particleField)[classIdx]->setVelocityVy(stold(token));
+            std::cout << "Vy: " << (*particleField)[classIdx]->getVelocityVy() << std::endl;
             break; // vy
         case 7:
-            particleField[classIdx]->velocity.vz = stod(token);
+            (*particleField)[classIdx]->setVelocityVz(stold(token));
+            std::cout << "Vy: " << (*particleField)[classIdx]->getVelocityVz() << std::endl;
             break; // vz
         case 8:
-            particleField[classIdx]->force.fx = stod(token);
+            (*particleField)[classIdx]->setForceFx(stold(token));
+            std::cout << "Fx: " << (*particleField)[classIdx]->getForceFX() << std::endl;
             break; // fx
         case 9:
-            particleField[classIdx]->force.fy = stod(token);
+            (*particleField)[classIdx]->setForceFy(stold(token));
+            std::cout << "Fy: " << (*particleField)[classIdx]->getForceFy() << std::endl;
             break; // fy
         case 10:
-            particleField[classIdx]->force.fz = stod(token);
+            (*particleField)[classIdx]->setForceFz(stold(token));
+            std::cout << "Fz: " << (*particleField)[classIdx]->getForceFz() << std::endl;
             break; // fz
         default:
             break;
     }                                    
 }
 
-void parseFile(const std::string& fileName, int& N, std::vector<Particle*> particleField, std::ifstream sourceFile) {
+void parseFile(const std::string& fileName, size_t& N, std::vector<Particle*>* particleField) {
+    std::cout << "Size of N: " << N << std::endl;
+    std::cout << "I am here" << std::endl;
+    for (int i = 0; i < N; ++i) (*particleField).push_back(new Particle());
     std::string line;
-    while(getline(sourceFile, line)) {
-        std::stringstream s(line);
-        std::string token;
-        int col = 0;
-        while(getline(s, token, '\t')) {
-            col++;
-            if(!(col % 10)) N++;
-        }
-    }
-    for (int i = 0; i < N; ++i) particleField.push_back(new Particle());
-    sourceFile.close();
     std::ifstream sourceFile(fileName);
+    if (!sourceFile.is_open()) {
+        std::cerr << "Failed to open file" << std::endl;
+        exit(1);
+    }
+    std::cout << "I am here" << std::endl;
     while (getline(sourceFile, line)) {
         std::stringstream s(line);
         std::string token;
@@ -360,7 +388,8 @@ void parseFile(const std::string& fileName, int& N, std::vector<Particle*> parti
                 i++;
             }
             particleInitFromFile(tokenIdx, particleField, i, token);
-            i++;
             tokenIdx++;
-        } 
+        }
+        sourceFile.close();
+    }
 }
