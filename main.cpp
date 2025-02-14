@@ -332,7 +332,7 @@ class Particle {
 
 void parseFile(const std::string& fileName, const size_t& N, std::vector<Particle*>* particleField);
 void particleInitFromFile(const size_t& tokenIdx, std::vector<Particle*>* particleField, const size_t& classIdx, const std::string& token);
-void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, const size_t& DUMP_RATE, std::vector<Particle*>* particleField);
+void nBodySim(const size_t& N, const size_t& DELTA_T, const size_t& TIME_STEPS, const size_t& DUMP_RATE, std::vector<Particle*>* particleField);
 void randInit(const size_t& N, std::vector<Particle*>* particleField);
 void dumpData(const size_t& N, std::vector<Particle*>* particleField, std::ofstream* file);
 
