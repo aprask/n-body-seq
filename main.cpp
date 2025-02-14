@@ -14,8 +14,8 @@
 
 class Particle {
     private:
-        const long double G = 6.674*pow(10,-11);
-        const long double SOFTENING_FACTOR = 0.000001;
+        const double G = 6.674*pow(10,-11);
+        const double SOFTENING_FACTOR = 0.000001;
         struct acceleration {
             double ax;
             double ay;
@@ -42,7 +42,7 @@ class Particle {
         struct velocity velocity;
         struct acceleration acceleration;
         struct position position;
-        long double mass;
+        double mass;
 
         Particle() {
             this->force.fx = 0;
@@ -61,19 +61,19 @@ class Particle {
         }
 
         Particle(
-            long double forceFx, 
-            long double forceFy, 
-            long double forceFz,
-            long double velocityVx,
-            long double velocityVy,
-            long double velocityVz,
-            long double accelerationAx,
-            long double accelerationAy,
-            long double accelerationAz,
-            long double positionX,
-            long double positionY,
-            long double positionZ,
-            long double mass
+            double forceFx, 
+            double forceFy, 
+            double forceFz,
+            double velocityVx,
+            double velocityVy,
+            double velocityVz,
+            double accelerationAx,
+            double accelerationAy,
+            double accelerationAz,
+            double positionX,
+            double positionY,
+            double positionZ,
+            double mass
         ) {
             this->force.fx = forceFx;
             this->force.fy = forceFy;
@@ -92,185 +92,249 @@ class Particle {
 
         ~Particle() {}
 
-        long calculateForceDirectionFx(const Particle& otherParticle) {
-            long double forceMagnitude = this->calculateForceMagnitude(otherParticle);
-            long double distanceVector = this->calculateEuclideanDistance(otherParticle);
-            long double linearDifference = this->position.x - otherParticle.position.x;
+        void printProperties() {
+            std::cout << "Mass: " << this->mass << std::endl;
+
+            std::cout << "X: " << this->position.x << std::endl;
+            std::cout << "Y: " << this->position.y << std::endl;
+            std::cout << "Z: " << this->position.z << std::endl;
+
+            std::cout << "Vx: " << this->velocity.vx << std::endl;
+            std::cout << "Vy: " << this->velocity.vy << std::endl;
+            std::cout << "Vz: " << this->velocity.vz << std::endl;
+
+            std::cout << "Ax: " << this->acceleration.ax << std::endl;
+            std::cout << "Ay: " << this->acceleration.ay << std::endl;
+            std::cout << "Az: " << this->acceleration.az << std::endl;
+
+            std::cout << "Fx: " << this->force.fx << std::endl;
+            std::cout << "Fy: " << this->force.fy << std::endl;
+            std::cout << "Fz: " << this->force.fz << std::endl;
+        }
+
+        void clearForce() {
+            this->force.fx = 0;
+            this->force.fy = 0;
+            this->force.fz = 0;
+        }
+
+        void updatePosition(const size_t& DELTA_T) {
+            this->acceleration.ax = this->calculateAccelerationX();
+            this->acceleration.ay = this->calculateAccelerationY();
+            this->acceleration.az = this->calculateAccelerationZ();
+
+            this->velocity.vx = this->calculateVelocityX(DELTA_T);
+            this->velocity.vy = this->calculateVelocityY(DELTA_T);
+            this->velocity.vz = this->calculateVelocityZ(DELTA_T);
+
+            this->position.x = this->calculatePositionX(DELTA_T);
+            this->position.y = this->calculatePositionY(DELTA_T);
+            this->position.z = this->calculatePositionZ(DELTA_T);
+        }
+
+        long calculateForceDirectionFx(const Particle* otherParticle) {
+            double forceMagnitude = this->calculateForceMagnitude(otherParticle);
+            double distanceVector = this->calculateEuclideanDistance(otherParticle);
+            double linearDifference = this->position.x - otherParticle->position.x;
             return forceMagnitude*(linearDifference/distanceVector);
         }
 
-        long calculateForceDirectionFy(const Particle& otherParticle) {
-            long double forceMagnitude = this->calculateForceMagnitude(otherParticle);
-            long double distanceVector = this->calculateEuclideanDistance(otherParticle);
-            long double linearDifference = this->position.y - otherParticle.position.y;
+        long calculateForceDirectionFy(const Particle* otherParticle) {
+            double forceMagnitude = this->calculateForceMagnitude(otherParticle);
+            double distanceVector = this->calculateEuclideanDistance(otherParticle);
+            double linearDifference = this->position.y - otherParticle->position.y;
             return forceMagnitude*(linearDifference/distanceVector);
         }
 
-        long calculateForceDirectionFz(const Particle& otherParticle) {
-            long double forceMagnitude = this->calculateForceMagnitude(otherParticle);
-            long double distanceVector = this->calculateEuclideanDistance(otherParticle);
-            long double linearDifference = this->position.z - otherParticle.position.z;
+        long calculateForceDirectionFz(const Particle* otherParticle) {
+            double forceMagnitude = this->calculateForceMagnitude(otherParticle);
+            double distanceVector = this->calculateEuclideanDistance(otherParticle);
+            double linearDifference = this->position.z - otherParticle->position.z;
             return forceMagnitude*(linearDifference/distanceVector);
         }
 
-        long double calculateForceMagnitude(const Particle& otherParticle) {
-            long double totalMassScalar = this->mass * otherParticle.mass;
-            long double distanceVector = this->calculateEuclideanDistance(otherParticle);
+        double calculateForceMagnitude(const Particle* otherParticle) {
+            double totalMassScalar = this->mass * otherParticle->mass;
+            double distanceVector = this->calculateEuclideanDistance(otherParticle);
             return G*(totalMassScalar/(pow(distanceVector,2)+SOFTENING_FACTOR));
         }
 
-        long double calculateEuclideanDistance(const Particle& otherParticle) {
-            return sqrt((pow(this->position.x-otherParticle.position.x,2)
-            + pow(this->position.y-otherParticle.position.y,2),
-            + pow(this->position.z-otherParticle.position.z,2)));
+        double calculateEuclideanDistance(const Particle* otherParticle) {
+            return sqrt((pow(this->position.x-otherParticle->position.x,2)
+            + pow(this->position.y-otherParticle->position.y,2) + pow(this->position.z-otherParticle->position.z,2)));
         }
 
-        long double calculatePositionX(const long double delta_t) {
-            return this->position.x * (this->velocity.vx*delta_t);
+        double calculatePositionX(const double delta_t) {
+            return this->position.x + (this->velocity.vx*delta_t);
         }
 
-        long double calculatePositionY(const long double delta_t) {
-            return this->position.y * (this->velocity.vy*delta_t);
+        double calculatePositionY(const double delta_t) {
+            return this->position.y + (this->velocity.vy*delta_t);
         }
 
-        long double calculatePositionZ(const long double delta_t) {
-            return this->position.z * (this->velocity.vz*delta_t);
+        double calculatePositionZ(const double delta_t) {
+            return this->position.z + (this->velocity.vz*delta_t);
         }
 
-        long double calculateAccelerationX() {
+        double calculateAccelerationX() {
             return this->force.fx/this->mass;
         }
 
-        long double calculateAccelerationY() {
+        double calculateAccelerationY() {
             return this->force.fy/this->mass;
         }
 
-        long double calculateAccelerationZ() {
+        double calculateAccelerationZ() {
             return this->force.fz/this->mass;
         }
 
-        long double calculateVelocityX(const long double delta_t) {
+        double calculateVelocityX(const double delta_t) {
             return this->velocity.vx + this->acceleration.ax*delta_t;
         }
 
-        long double calculateVelocityY(const long double delta_t) {
+        double calculateVelocityY(const double delta_t) {
             return this->velocity.vy + this->acceleration.ay*delta_t;
         }
 
-        long double calculateVelocityZ(const long double delta_t) {
+        double calculateVelocityZ(const double delta_t) {
             return this->velocity.vz + this->acceleration.az*delta_t;
         }
 
-        long double getForceFX() const {
+        double getForceFX() const {
             return this->force.fx;
         }
 
-        void setForceFx(long double forceFx) {
-            this->force.fx = forceFx;
+        void setForceFx(const double& forceFx) {
+            this->force.fx += forceFx;
         }
 
-        long double getForceFy() const {
+        void updateOtherFx(Particle* otherParticle) {
+            double forceMagnitude = otherParticle->calculateForceMagnitude(this);
+            double distanceVector = otherParticle->calculateEuclideanDistance(this);
+            double linearDifference = otherParticle->position.x - this->position.x;
+            double forceComp = forceMagnitude*(linearDifference/distanceVector);
+            otherParticle->force.fx -= forceComp;
+        }
+
+        double getForceFy() const {
             return this->force.fy;
         }
 
-        void setForceFy(long double forceFy) {
-            this->force.fy = forceFy;
+        void setForceFy(const double& forceFy) {
+            this->force.fy += forceFy;
         }
 
-        long double getForceFz() const {
+        void updateOtherFy(Particle* otherParticle) {
+            double forceMagnitude = otherParticle->calculateForceMagnitude(this);
+            double distanceVector = otherParticle->calculateEuclideanDistance(this);
+            double linearDifference = otherParticle->position.y - this->position.y;
+            double forceComp = forceMagnitude*(linearDifference/distanceVector);
+            otherParticle->force.fy -= forceComp;
+        }
+
+        double getForceFz() const {
             return this->force.fz;
         }
 
-        void setForceFz(long double forceFz) {
-            this->force.fz = forceFz;
+        void setForceFz(const double& forceFz) {
+            this->force.fz += forceFz;
         }
 
-        long double getVelocityVx() const {
+        void updateOtherFz(Particle* otherParticle) {
+            double forceMagnitude = otherParticle->calculateForceMagnitude(this);
+            double distanceVector = otherParticle->calculateEuclideanDistance(this);
+            double linearDifference = otherParticle->position.z - this->position.z;
+            double forceComp = forceMagnitude*(linearDifference/distanceVector);
+            otherParticle->force.fz -= forceComp;
+        }
+
+        double getVelocityVx() const {
             return this->velocity.vx;
         }
 
-        void setVelocityVx(long double velocityVx) {
+        void setVelocityVx(const double& velocityVx) {
             this->velocity.vx = velocityVx;
         }
 
-        long double getVelocityVy() const {
+        double getVelocityVy() const {
             return this->velocity.vy;
         }
 
-        void setVelocityVy(long double velocityVy) {
+        void setVelocityVy(const double& velocityVy) {
             this->velocity.vy = velocityVy;
         }
 
-        long double getVelocityVz() const {
+        double getVelocityVz() const {
             return this->velocity.vz;
         }
 
-        void setVelocityVz(long double velocityVz) {
+        void setVelocityVz(const double& velocityVz) {
             this->velocity.vz = velocityVz;
         }
 
-        long double getAccelerationAx() const {
+        double getAccelerationAx() const {
             return this->acceleration.ax;
         }
 
-        void setAccelerationAx(long double accelerationAx) {
+        void setAccelerationAx(const double& accelerationAx) {
             this->acceleration.ax = accelerationAx;
         }
 
-        long double getAccelerationAy() const {
+        double getAccelerationAy() const {
             return this->acceleration.ay;
         }
 
-        void setAccelerationAy(long double accelerationAy) {
+        void setAccelerationAy(const double& accelerationAy) {
             this->acceleration.ay = accelerationAy;
         }
         
-        long double getAccelerationAz() const {
+        double getAccelerationAz() const {
             return this->acceleration.az;
         }
 
-        void setAccelerationAz(long double accelerationAz) {
+        void setAccelerationAz(const double& accelerationAz) {
             this->acceleration.az = accelerationAz;
         }
 
-        long double getPositionX() const {
+        double getPositionX() const {
             return this->position.x;
         }
 
-        void setPositionX(long double positionX) {
+        void setPositionX(const double& positionX) {
             this->position.x = positionX;
         }
 
-        long double getPositionY() const {
+        double getPositionY() const {
             return this->position.y;
         }
 
-        void setPositionY(long double positionY) {
+        void setPositionY(const double& positionY) {
             this->position.y = positionY;
         }
 
-        long double getPositionZ() const {
+        double getPositionZ() const {
             return this->position.z;
         }
 
-        void setPositionZ(long double positionZ) {
+        void setPositionZ(const double& positionZ) {
             this->position.z = positionZ;
         }
 
-        long double getMass() const {
+        double getMass() const {
             return this->mass;
         }
 
-        void setMass(long double mass) {
+        void setMass(double mass) {
             this->mass = mass;
         }
 };
 
 
 void parseFile(const std::string& fileName, const size_t& N, std::vector<Particle*>* particleField);
-void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, const std::string& token);
+void particleInitFromFile(const size_t& tokenIdx, std::vector<Particle*>* particleField, const size_t& classIdx, const std::string& token);
 void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, const size_t& DUMP_RATE, std::vector<Particle*>* particleField);
 void randInit(const size_t& N, std::vector<Particle*>* particleField);
+void dumpData(const size_t& N, std::vector<Particle*>* particleField, std::ofstream* file);
 
 int main(int argc, char* argv[]) {
     bool readFromFile = false;
@@ -303,28 +367,55 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                             sourceFile.close();
-                            std::cout << "I am here" << std::endl;                    
                             parseFile(fileName, N, &particleField);
-                            break;
                         }
                     } else {
                         std::cerr << "Invalid numerical argument type passed: " << argv[i] << std::endl;
                         return 1;
                     }
                 } else {
-                    N = std::stold(argv[1]);
+                    if (readFromFile) break;
+                    N = std::stoi(argv[1]);
+                    randInit(N, &particleField);
                 }
             }
         }
     }
-    size_t DELTA_T = std::stold(argv[2]);
-    size_t TIME_STEPS = std::stold(argv[3]);
-    size_t DUMP_RATE = std::stold(argv[4]);
+    const size_t DELTA_T = std::stoi(argv[2]);
+    const size_t TIME_STEPS = std::stoi(argv[3]);
+    const size_t DUMP_RATE = std::stoi(argv[4]);
     nBodySim(N, DELTA_T, TIME_STEPS, DUMP_RATE, &particleField);
     return 0;
 }
 
+void dumpData(const size_t& N, std::vector<Particle*>* particleField, std::ofstream* file) {
+    if (particleField == nullptr) {
+        std::cerr << "Particle field pointer is NULL" << std::endl;
+        exit(1);
+    }
+    *(file) << N << "\t";
+    for (size_t i = 0; i < N; ++i) {
+        for (size_t j = 0; j < N; ++j) {
+            *(file) << (*particleField)[j]->getMass() << "\t";
+            *(file) << (*particleField)[j]->getPositionX() << "\t";
+            *(file) << (*particleField)[j]->getPositionY() << "\t";
+            *(file) << (*particleField)[j]->getPositionZ() << "\t";
+            *(file) << (*particleField)[j]->getVelocityVx() << "\t";
+            *(file) << (*particleField)[j]->getVelocityVy() << "\t";
+            *(file) << (*particleField)[j]->getVelocityVz() << "\t";
+            *(file) << (*particleField)[j]->getForceFX() << "\t";
+            *(file) << (*particleField)[j]->getForceFy() << "\t";
+            *(file) << (*particleField)[j]->getForceFz() << "\t";
+        }
+    }
+    *(file) << std::endl;
+}
+
 void randInit(const size_t& N, std::vector<Particle*>* particleField) {
+    if (particleField == nullptr) {
+        std::cerr << "Particle field pointer is NULL" << std::endl;
+        exit(1);
+    }
     for (int i = 0; i < N; ++i) particleField->push_back(new Particle());
 }
 
@@ -334,7 +425,11 @@ void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, 
         exit(1);
     }
     std::ofstream dataFile;
-    char buffer[40]; // something arbitrary but big enough to hold a file
+    char* buffer = new char[40]; // something arbitrary but big enough to hold a file
+    if (!buffer) {
+        std::cerr << "Failed to allocate memory for buffer" << std::endl;
+        exit(1);
+    }
     // https://cplusplus.com/reference/ctime/localtime/
     std::time_t now; // time val
     struct tm* date; // contains components as it relates to time
@@ -345,18 +440,41 @@ void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, 
     dataFile.open(buffer, std::ios::trunc);
     auto global_time = std::chrono::high_resolution_clock::now();
 
+    for (size_t i = 0; i < TIME_STEPS; ++i) {
+        for (size_t j = 0; j < N; ++j) {
+            (*particleField)[j]->clearForce();
+        }
+        for (size_t j = 0; j < N; ++j) {
+            for (size_t k = j + 1; k < N; ++k) {
+                // computing forces
+                (*particleField)[j]->setForceFx((*particleField)[j]->calculateForceDirectionFx((*particleField)[k]));
+                (*particleField)[j]->setForceFy((*particleField)[j]->calculateForceDirectionFy((*particleField)[k]));
+                (*particleField)[j]->setForceFz((*particleField)[j]->calculateForceDirectionFz((*particleField)[k]));
+                (*particleField)[j]->updateOtherFx((*particleField)[k]);
+                (*particleField)[j]->updateOtherFy((*particleField)[k]);
+                (*particleField)[j]->updateOtherFz((*particleField)[k]);
 
-
-
+                (*particleField)[j]->printProperties();
+                (*particleField)[k]->printProperties();
+                
+                if(!(i % DUMP_RATE)) dumpData(N, particleField, &dataFile);
+            }
+            // calculate positions
+            for (int k = 0; k < N; ++k) {
+                (*particleField)[k]->updatePosition(DELTA_T);
+            }
+        }
+    }
 
     dataFile.close();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - global_time).count();
     std::ofstream logFile;
     logFile.open("data.csv", std::ios::app);
     logFile << N << "," << DELTA_T << "," << TIME_STEPS << "," << DUMP_RATE << "," << duration << std::endl;
+    delete[] buffer;
 }
 
-void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, const std::string& token) {
+void particleInitFromFile(const size_t& tokenIdx, std::vector<Particle*>* particleField, const size_t& classIdx, const std::string& token) {
     if (particleField == nullptr) {
         std::cerr << "Particle field pointer is NULL" << std::endl;
         exit(1);
@@ -365,44 +483,34 @@ void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleF
         case 0: // we skip the first col (which is particles)
             break;
         case 1:
-            (*particleField)[classIdx]->setMass(stold(token));
-            std::cout << "Mass: " << (*particleField)[classIdx]->getMass() << std::endl;
+            (*particleField)[classIdx]->setMass(stod(token));
             break; // mass
         case 2:
-            (*particleField)[classIdx]->setPositionX(stold(token));
-            std::cout << "X: " << (*particleField)[classIdx]->getPositionX() << std::endl;
+            (*particleField)[classIdx]->setPositionX(stod(token));
             break; // x
         case 3:
-            (*particleField)[classIdx]->setPositionY(stold(token));
-            std::cout << "Y: " << (*particleField)[classIdx]->getPositionY() << std::endl;
+            (*particleField)[classIdx]->setPositionY(stod(token));
             break; // y
         case 4:
-            (*particleField)[classIdx]->setPositionZ(stold(token));
-            std::cout << "Z: " << (*particleField)[classIdx]->getPositionZ() << std::endl;
+            (*particleField)[classIdx]->setPositionZ(stod(token));
             break; // z
         case 5:
-            (*particleField)[classIdx]->setVelocityVx(stold(token));
-            std::cout << "Vx: " << (*particleField)[classIdx]->getVelocityVx() << std::endl;
+            (*particleField)[classIdx]->setVelocityVx(stod(token));
             break; // vx
         case 6:
-            (*particleField)[classIdx]->setVelocityVy(stold(token));
-            std::cout << "Vy: " << (*particleField)[classIdx]->getVelocityVy() << std::endl;
+            (*particleField)[classIdx]->setVelocityVy(stod(token));
             break; // vy
         case 7:
-            (*particleField)[classIdx]->setVelocityVz(stold(token));
-            std::cout << "Vy: " << (*particleField)[classIdx]->getVelocityVz() << std::endl;
+            (*particleField)[classIdx]->setVelocityVz(stod(token));
             break; // vz
         case 8:
-            (*particleField)[classIdx]->setForceFx(stold(token));
-            std::cout << "Fx: " << (*particleField)[classIdx]->getForceFX() << std::endl;
+            (*particleField)[classIdx]->setForceFx(stod(token));
             break; // fx
         case 9:
-            (*particleField)[classIdx]->setForceFy(stold(token));
-            std::cout << "Fy: " << (*particleField)[classIdx]->getForceFy() << std::endl;
+            (*particleField)[classIdx]->setForceFy(stod(token));
             break; // fy
         case 10:
-            (*particleField)[classIdx]->setForceFz(stold(token));
-            std::cout << "Fz: " << (*particleField)[classIdx]->getForceFz() << std::endl;
+            (*particleField)[classIdx]->setForceFz(stod(token));
             break; // fz
         default:
             break;
@@ -414,21 +522,18 @@ void parseFile(const std::string& fileName, const size_t& N, std::vector<Particl
         std::cerr << "Particle field pointer is NULL" << std::endl;
         exit(1);
     }
-    std::cout << "Size of N: " << N << std::endl;
-    std::cout << "I am here" << std::endl;
-    for (int i = 0; i < N; ++i) (*particleField).push_back(new Particle());
+    for (size_t i = 0; i < N; ++i) (*particleField).push_back(new Particle());
     std::string line;
     std::ifstream sourceFile(fileName);
     if (!sourceFile.is_open()) {
         std::cerr << "Failed to open file" << std::endl;
         exit(1);
     }
-    std::cout << "I am here" << std::endl;
     while (getline(sourceFile, line)) {
         std::stringstream s(line);
         std::string token;
-        int tokenIdx = 0;
-        int classIdx = 0;
+        size_t tokenIdx = 0;
+        size_t classIdx = 0;
         while (getline(s, token, '\t')) {
             if (tokenIdx > 10) {
                 tokenIdx = 1;
