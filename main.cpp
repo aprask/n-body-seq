@@ -267,9 +267,10 @@ class Particle {
 };
 
 
-void parseFile(const std::string& fileName, size_t& N, std::vector<Particle*>* particleField);
-void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, std::string token);
-
+void parseFile(const std::string& fileName, const size_t& N, std::vector<Particle*>* particleField);
+void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, const std::string& token);
+void nBodySim(const size_t& N, const size_t& DELTA_T, const size_t& DUMP_RATE, std::vector<Particle*>* particleField);
+void randInit(const size_t& N, std::vector<Particle*>* particleField);
 
 int main(int argc, char* argv[]) {
     bool readFromFile = false;
@@ -310,14 +311,36 @@ int main(int argc, char* argv[]) {
                         std::cerr << "Invalid numerical argument type passed: " << argv[i] << std::endl;
                         return 1;
                     }
+                } else {
+                    N = std::stold(argv[1]);
                 }
             }
         }
     }
+    size_t DELTA_T = std::stold(argv[2]);
+    size_t TIME_STEPS = std::stold(argv[3]);
+    size_t DUMP_RATE = std::stold(argv[4]);
+    // nBodySim(N, &particleField);
+    // nBodySim();
     return 0;
 }
 
-void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, std::string token) {
+void randInit(const size_t& N, std::vector<Particle*>* particleField) {
+    for (int i = 0; i < N; ++i) particleField->push_back(new Particle());
+}
+
+void nBodySim(const size_t& N, const size_t& DELTA_T, const size_t& DUMP_RATE, std::vector<Particle*>* particleField) {
+    if (particleField == nullptr) {
+        std::cerr << "Particle field pointer is NULL" << std::endl;
+        exit(1);
+    }
+}
+
+void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, const std::string& token) {
+    if (particleField == nullptr) {
+        std::cerr << "Particle field pointer is NULL" << std::endl;
+        exit(1);
+    }
     switch (tokenIdx) {
         case 0: // we skip the first col (which is particles)
             break;
@@ -366,7 +389,11 @@ void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleF
     }                                    
 }
 
-void parseFile(const std::string& fileName, size_t& N, std::vector<Particle*>* particleField) {
+void parseFile(const std::string& fileName, const size_t& N, std::vector<Particle*>* particleField) {
+    if (particleField == nullptr) {
+        std::cerr << "Particle field pointer is NULL" << std::endl;
+        exit(1);
+    }
     std::cout << "Size of N: " << N << std::endl;
     std::cout << "I am here" << std::endl;
     for (int i = 0; i < N; ++i) (*particleField).push_back(new Particle());
@@ -381,13 +408,13 @@ void parseFile(const std::string& fileName, size_t& N, std::vector<Particle*>* p
         std::stringstream s(line);
         std::string token;
         int tokenIdx = 0;
-        int i = 0;
+        int classIdx = 0;
         while (getline(s, token, '\t')) {
             if (tokenIdx > 10) {
                 tokenIdx = 1;
-                i++;
+                classIdx++;
             }
-            particleInitFromFile(tokenIdx, particleField, i, token);
+            particleInitFromFile(tokenIdx, particleField, classIdx, token);
             tokenIdx++;
         }
         sourceFile.close();
