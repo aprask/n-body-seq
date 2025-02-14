@@ -420,7 +420,7 @@ void randInit(const size_t& N, std::vector<Particle*>* particleField) {
     for (int i = 0; i < N; ++i) particleField->push_back(new Particle());
 }
 
-void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, const size_t& DUMP_RATE, std::vector<Particle*>* particleField) {
+void nBodySim(const size_t& N, const size_t& DELTA_T, const size_t& TIME_STEPS, const size_t& DUMP_RATE, std::vector<Particle*>* particleField) {
     if (particleField == nullptr) {
         std::cerr << "Particle field pointer is NULL" << std::endl;
         exit(1);
@@ -441,6 +441,10 @@ void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, 
     dataFile.open(buffer, std::ios::trunc);
     auto global_time = std::chrono::high_resolution_clock::now();
     for (size_t i = 0; i < TIME_STEPS; ++i) {
+        std::cout << "Value of i mod DR = " << i % DUMP_RATE << std::endl;
+        if(!(i % DUMP_RATE)) {
+            dumpData(N, particleField, &dataFile);
+        }
         for (size_t j = 0; j < N; ++j) {
             (*particleField)[j]->clearForce();
         }
@@ -457,7 +461,6 @@ void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, 
             // calculate positions
             for (int k = 0; k < N; ++k) (*particleField)[k]->updatePosition(DELTA_T);
         }
-        if(!(i % DUMP_RATE)) dumpData(N, particleField, &dataFile);
     }
 
     dataFile.close();
