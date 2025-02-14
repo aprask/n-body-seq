@@ -269,7 +269,7 @@ class Particle {
 
 void parseFile(const std::string& fileName, const size_t& N, std::vector<Particle*>* particleField);
 void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, const std::string& token);
-void nBodySim(const size_t& N, const size_t& DELTA_T, const size_t& DUMP_RATE, std::vector<Particle*>* particleField);
+void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, const size_t& DUMP_RATE, std::vector<Particle*>* particleField);
 void randInit(const size_t& N, std::vector<Particle*>* particleField);
 
 int main(int argc, char* argv[]) {
@@ -320,8 +320,7 @@ int main(int argc, char* argv[]) {
     size_t DELTA_T = std::stold(argv[2]);
     size_t TIME_STEPS = std::stold(argv[3]);
     size_t DUMP_RATE = std::stold(argv[4]);
-    // nBodySim(N, &particleField);
-    // nBodySim();
+    nBodySim(N, DELTA_T, TIME_STEPS, DUMP_RATE, &particleField);
     return 0;
 }
 
@@ -329,11 +328,32 @@ void randInit(const size_t& N, std::vector<Particle*>* particleField) {
     for (int i = 0; i < N; ++i) particleField->push_back(new Particle());
 }
 
-void nBodySim(const size_t& N, const size_t& DELTA_T, const size_t& DUMP_RATE, std::vector<Particle*>* particleField) {
+void nBodySim(const size_t& N, const size_t& TIME_STEPS, const size_t& DELTA_T, const size_t& DUMP_RATE, std::vector<Particle*>* particleField) {
     if (particleField == nullptr) {
         std::cerr << "Particle field pointer is NULL" << std::endl;
         exit(1);
     }
+    std::ofstream dataFile;
+    char buffer[40]; // something arbitrary but big enough to hold a file
+    // https://cplusplus.com/reference/ctime/localtime/
+    std::time_t now; // time val
+    struct tm* date; // contains components as it relates to time
+    std::time(&now);
+    date = std::localtime(&now);
+    // https://cplusplus.com/reference/ctime/strftime/
+    std::strftime(buffer, 80, "results_%B_%A_%H_%M_%S.tsv", date); // I needed a way to make unique files (date seemed appropriate)
+    dataFile.open(buffer, std::ios::trunc);
+    auto global_time = std::chrono::high_resolution_clock::now();
+
+
+
+
+
+    dataFile.close();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - global_time).count();
+    std::ofstream logFile;
+    logFile.open("data.csv", std::ios::app);
+    logFile << N << "," << DELTA_T << "," << TIME_STEPS << "," << DUMP_RATE << "," << duration << std::endl;
 }
 
 void particleInitFromFile(const int& tokenIdx, std::vector<Particle*>* particleField, const int& classIdx, const std::string& token) {
