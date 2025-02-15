@@ -9,6 +9,7 @@
 #include <sstream>
 #include <chrono>
 #include <ctime>
+#include <sstream>
 
 #define ARGS 5
 
@@ -394,22 +395,24 @@ void dumpData(const size_t& N, std::vector<Particle*>* particleField, std::ofstr
         std::cerr << "Particle field pointer is NULL" << std::endl;
         exit(1);
     }
-    *(file) << N << "\t";
+    std::ostringstream outputS; // reference: https://cplusplus.com/reference/sstream/ostringstream/
+    outputS << N << "\t";
     for (size_t i = 0; i < N; ++i) {
         for (size_t j = 0; j < N; ++j) {
-            *(file) << (*particleField)[j]->getMass() << "\t";
-            *(file) << (*particleField)[j]->getPositionX() << "\t";
-            *(file) << (*particleField)[j]->getPositionY() << "\t";
-            *(file) << (*particleField)[j]->getPositionZ() << "\t";
-            *(file) << (*particleField)[j]->getVelocityVx() << "\t";
-            *(file) << (*particleField)[j]->getVelocityVy() << "\t";
-            *(file) << (*particleField)[j]->getVelocityVz() << "\t";
-            *(file) << (*particleField)[j]->getForceFX() << "\t";
-            *(file) << (*particleField)[j]->getForceFy() << "\t";
-            *(file) << (*particleField)[j]->getForceFz() << "\t";
+            outputS << (*particleField)[j]->getMass() << "\t";
+            outputS << (*particleField)[j]->getPositionX() << "\t";
+            outputS << (*particleField)[j]->getPositionY() << "\t";
+            outputS << (*particleField)[j]->getPositionZ() << "\t";
+            outputS << (*particleField)[j]->getVelocityVx() << "\t";
+            outputS << (*particleField)[j]->getVelocityVy() << "\t";
+            outputS << (*particleField)[j]->getVelocityVz() << "\t";
+            outputS << (*particleField)[j]->getForceFX() << "\t";
+            outputS << (*particleField)[j]->getForceFy() << "\t";
+            outputS << (*particleField)[j]->getForceFz() << "\t";
         }
     }
-    *(file) << std::endl;
+    outputS << std::endl;
+    *(file) << outputS.str();
 }
 
 void randInit(const size_t& N, std::vector<Particle*>* particleField) {
@@ -441,7 +444,6 @@ void nBodySim(const size_t& N, const size_t& DELTA_T, const size_t& TIME_STEPS, 
     dataFile.open(buffer, std::ios::trunc);
     auto global_time = std::chrono::high_resolution_clock::now();
     for (size_t i = 0; i < TIME_STEPS; ++i) {
-        std::cout << "Value of i mod DR = " << i % DUMP_RATE << std::endl;
         if(!(i % DUMP_RATE)) {
             dumpData(N, particleField, &dataFile);
         }
@@ -459,7 +461,7 @@ void nBodySim(const size_t& N, const size_t& DELTA_T, const size_t& TIME_STEPS, 
                 (*particleField)[j]->updateOtherFz((*particleField)[k]);
             }
             // calculate positions
-            for (int k = 0; k < N; ++k) (*particleField)[k]->updatePosition(DELTA_T);
+            for (size_t k = 0; k < N; ++k) (*particleField)[k]->updatePosition(DELTA_T);
         }
     }
 
