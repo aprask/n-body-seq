@@ -1,4 +1,0 @@
-rm *.o nbod
-g++ -c main.cpp
-g++ -o nbod main.o
-slurmstepd: error: *** JOB 7258 ON gal-c1 CANCELLED AT 2025-02-15T14:03:52 ***
