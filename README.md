@@ -41,7 +41,10 @@ The goal of this program is to measure the performance of a sequential N-Body si
 ---
 
 ## Benchmark
-- 
+
+10 Particles,200 Delta T,5000000 Steps,10000 Dump,209380ms
+100 Particles,1 Delta T,10000 Steps,500 Dump,54758ms
+1000 Particles,1 Delta T,10000 Steps,2000 Dump,55329021010ms
 
 ---
 
