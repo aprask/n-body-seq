@@ -5,4 +5,4 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem=128G
-./run2.sh
+./run_2.sh
