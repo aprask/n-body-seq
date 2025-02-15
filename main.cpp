@@ -394,22 +394,20 @@ void dumpData(const size_t& N, std::vector<Particle*>* particleField, std::ofstr
         std::cerr << "Particle field pointer is NULL" << std::endl;
         exit(1);
     }
-    std::ostringstream outputS; // reference: https://cplusplus.com/reference/sstream/ostringstream/
-    outputS << N << "\t";
+    *(file) << N << "\t";
     for (size_t i = 0; i < N; ++i) {
-            outputS << (*particleField)[i]->getMass() << "\t";
-            outputS << (*particleField)[i]->getPositionX() << "\t";
-            outputS << (*particleField)[i]->getPositionY() << "\t";
-            outputS << (*particleField)[i]->getPositionZ() << "\t";
-            outputS << (*particleField)[i]->getVelocityVx() << "\t";
-            outputS << (*particleField)[i]->getVelocityVy() << "\t";
-            outputS << (*particleField)[i]->getVelocityVz() << "\t";
-            outputS << (*particleField)[i]->getForceFX() << "\t";
-            outputS << (*particleField)[i]->getForceFy() << "\t";
-            outputS << (*particleField)[i]->getForceFz() << "\t";
+            *(file) << (*particleField)[i]->getMass() << "\t";
+            *(file) << (*particleField)[i]->getPositionX() << "\t";
+            *(file) << (*particleField)[i]->getPositionY() << "\t";
+            *(file) << (*particleField)[i]->getPositionZ() << "\t";
+            *(file) << (*particleField)[i]->getVelocityVx() << "\t";
+            *(file) << (*particleField)[i]->getVelocityVy() << "\t";
+            *(file) << (*particleField)[i]->getVelocityVz() << "\t";
+            *(file) << (*particleField)[i]->getForceFX() << "\t";
+            *(file) << (*particleField)[i]->getForceFy() << "\t";
+            *(file) << (*particleField)[i]->getForceFz() << "\t";
     }
-    outputS << std::endl;
-    *(file) << outputS.str();
+    *(file) << std::endl;
 }
 
 void randInit(const size_t& N, std::vector<Particle*>* particleField) {
