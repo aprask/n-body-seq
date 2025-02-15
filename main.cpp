@@ -386,6 +386,9 @@ int main(int argc, char* argv[]) {
     const size_t TIME_STEPS = std::stoi(argv[3]);
     const size_t DUMP_RATE = std::stoi(argv[4]);
     nBodySim(N, DELTA_T, TIME_STEPS, DUMP_RATE, &particleField);
+    for (int i = 0; i < N; ++i) {
+        delete particleField[i];
+    }
     return 0;
 }
 
